@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"strings"
+	"log"
 )
 
 const SQL_PREFIX = `
@@ -188,6 +189,10 @@ func (this Column) ToModifySQL(tableName string, order string) string {
 func (this Column) ToFKAddSQL(tableName string) string {
 	res := bytes.NewBuffer(nil)
 	tmp := strings.Split(this.Reference, ".")
+
+	if len(tmp) < 2{
+		log.Fatalf("invalid REF field format. require format:'table.column', actual value:'%s' in table:%s, column:%s", this.Reference, tableName, this.Name)
+	}
 	refTableName := tmp[0]
 	refColumnName := tmp[1]
 	res.WriteString(fmt.Sprintf("ALTER TABLE `%s` ADD CONSTRAINT `ref_%s_%s_%s_%s`", tableName, tableName, this.Name.LowerSnake(), refTableName, refColumnName))
