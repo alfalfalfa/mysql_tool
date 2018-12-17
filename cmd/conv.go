@@ -93,9 +93,6 @@ func detectOutputFormat(format string, output string) string {
 	if format != "" {
 		return format
 	}
-	if format == "" {
-		return "sql"
-	}
 	if filepath.Ext(output) == ".sql" {
 		return "sql"
 	}

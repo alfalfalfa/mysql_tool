@@ -46,6 +46,9 @@ func DetectInputFormat(input string) string {
 	if filepath.Ext(input) == ".yaml" {
 		return "yaml"
 	}
+	if filepath.Ext(input) == ".yml" {
+		return "yaml"
+	}
 	return "mysql"
 }
 
