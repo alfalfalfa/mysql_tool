@@ -5,26 +5,20 @@ import (
 	"io/ioutil"
 )
 
-func NewModelFromJson(ignoreTables[]string, pathes ...string) *Models {
+func loadTablesFromJson(ignoreTables[]string, path string) []*Table {
 	tables := make([]*Table, 0)
-	for _, path := range pathes {
-		m := &Models{}
-		b, err := ioutil.ReadFile(path)
-		checkError(err)
-		err = json.Unmarshal(b, &m.Tables)
-		checkError(err)
+	m := &Models{}
+	b, err := ioutil.ReadFile(path)
+	checkError(err)
+	err = json.Unmarshal(b, &m.Tables)
+	checkError(err)
 
-		for _, t := range m.Tables {
-			// 無視するテーブル名を判定
-			if contains(ignoreTables, t.Name.LowerSnake()) {
-				continue
-			}
-			tables = append(tables, t)
+	for _, t := range m.Tables {
+		// 無視するテーブル名を判定
+		if contains(ignoreTables, t.Name.LowerSnake()) {
+			continue
 		}
+		tables = append(tables, t)
 	}
-
-	res := &Models{}
-	res.Tables = tables
-	res.resolveReferences()
-	return res
+	return tables
 }

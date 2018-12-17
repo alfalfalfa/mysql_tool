@@ -22,7 +22,7 @@ Usage:
     mysql_tool conv [-f FORMAT] [-o OUTPUT] [--foreign-key] [--ignore-tables IGNORE_TABLES...] [--json-comment] INPUTS...
 
 Arg:
-    入力ファイルパス（json,xlsx） | mysql fqdn
+    入力ファイルパス（json, yaml, xlsx, dir） | mysql fqdn
 
 Options:
     -h --help                     Show this screen.
@@ -62,7 +62,7 @@ func RunConv() {
 	copy.MapToStructWithTag(arguments, arg, "arg")
 	//fmt.Println(json.ToJson(arg))
 
-	m := loadModel(arg.IgnoreTables, arg.Inputs...)
+	m := models.LoadModel(arg.IgnoreTables, arg.Inputs...)
 
 	format := detectOutputFormat(arg.Format, arg.Output)
 	b := marshalModel(m, format, arg.ForeignKey, arg.JsonComment)
@@ -77,17 +77,6 @@ func RunConv() {
 	}
 }
 
-func loadModel(ignoreTables[]string, inputs ...string) *models.Models {
-	switch detectInputFormat(inputs[0]) {
-	case "xlsx":
-		return models.NewModelFromExcel(ignoreTables, inputs...)
-	case "json":
-		return models.NewModelFromJson(ignoreTables, inputs...)
-	case "mysql":
-		return models.NewModelFromMysql(ignoreTables, inputs[0])
-	}
-	panic(fmt.Sprint("input format invalid:", inputs))
-}
 
 func marshalModel(m *models.Models, format string, fk bool, jsonComment bool) []byte {
 	switch format {
@@ -101,15 +90,6 @@ func marshalModel(m *models.Models, format string, fk bool, jsonComment bool) []
 	panic(fmt.Sprint("output format invalid:", format))
 }
 
-func detectInputFormat(input string) string {
-	if filepath.Ext(input) == ".xlsx" {
-		return "xlsx"
-	}
-	if filepath.Ext(input) == ".json" {
-		return "json"
-	}
-	return "mysql"
-}
 
 func detectOutputFormat(format string, output string) string {
 	if format != "" {

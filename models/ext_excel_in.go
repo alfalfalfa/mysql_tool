@@ -9,33 +9,27 @@ import (
 	"gopkg.in/guregu/null.v3"
 )
 
-func NewModelFromExcel(ignoreTables []string, pathes ...string) *Models {
-	res := &Models{}
+func loadTablesFromExcel(ignoreTables []string, path string) []*Table {
 	tables := make([]*Table, 0)
-	for _, path := range pathes {
-		file, err := xlsx.OpenFile(path)
-		checkError(err)
-		for _, sheet := range file.Sheets {
-			if strings.HasPrefix(sheet.Name, "_") {
-				continue
-			}
+	file, err := xlsx.OpenFile(path)
+	checkError(err)
+	for _, sheet := range file.Sheets {
+		if strings.HasPrefix(sheet.Name, "_") {
+			continue
+		}
 
-			// 無視するテーブル名を確認
-			if contains(ignoreTables, sheet.Name) {
-				continue
-			}
+		// 無視するテーブル名を確認
+		if contains(ignoreTables, sheet.Name) {
+			continue
+		}
 
-			//fmt.Println(path, sheet.Name)
-			t := NewTableFromExcelSheet(sheet)
-			if t != nil {
-				tables = append(tables, t)
-			}
+		//fmt.Println(path, sheet.Name)
+		t := NewTableFromExcelSheet(sheet)
+		if t != nil {
+			tables = append(tables, t)
 		}
 	}
-
-	res.Tables = tables
-	res.resolveReferences()
-	return res
+	return tables
 }
 
 func NewTableFromExcelSheet(sheet *xlsx.Sheet) *Table {
@@ -166,7 +160,7 @@ func getNullableCellValue(row *xlsx.Row, num int) null.String {
 		return null.NewString("", false)
 	}
 	v := strings.TrimSpace(row.Cells[num].Value)
-	if v == ""{
+	if v == "" {
 		return null.NewString("", false)
 	}
 	return null.StringFrom(v)
@@ -176,7 +170,7 @@ func getDefaultCellValue(row *xlsx.Row, num int) null.String {
 		return null.NewString("", false)
 	}
 	v := strings.TrimSpace(row.Cells[num].Value)
-	if v == ""{
+	if v == "" {
 		return null.NewString("", false)
 	}
 	return null.StringFrom(strings.Trim(v, "'"))

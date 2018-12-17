@@ -27,7 +27,7 @@ Usage:
     mysql_tool gen (-t TEMPLATE) (-o OUTPUT) [--tables TABLES...] [--ignore-tables IGNORE_TABLES...] INPUTS...
 
 Arg:
-    入力ファイルパス（json,xlsx） | mysql fqdn
+    入力ファイルパス（json, yaml, xlsx, dir） | mysql fqdn
 
 Options:
     -h --help                             Show this screen.
@@ -63,7 +63,7 @@ func RunGen() {
 	arg := &GenArg{}
 	copy.MapToStructWithTag(arguments, arg, "arg")
 
-	m := loadModel(arg.IgnoreTables, arg.Inputs...)
+	m := models.LoadModel(arg.IgnoreTables, arg.Inputs...)
 
 	tables := make([]*models.Table, 0)
 	for _, t := range m.Tables {

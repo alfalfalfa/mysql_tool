@@ -26,7 +26,7 @@ Usage:
 Arg:
 	<TEMPLATE_PATH>        (必須)テンプレートファイルパス
 	<OUTPUT_PATH_PETTERN>  (必須)出力ファイルパスパターン
-	INPUTS...   入力ファイルパス（json,xlsx） | mysql fqdn
+    INPUTS...				入力ファイルパス（json, yaml, xlsx, dir） | mysql fqdn
 
 Options:
     -h --help                           Show this screen.
@@ -76,7 +76,7 @@ func RunMultipleGen() {
 	copy.MapToStructWithTag(arguments, arg, "arg")
 	//dump(arg)
 
-	m := loadModel(arg.IgnoreTables, arg.Inputs...)
+	m := models.LoadModel(arg.IgnoreTables, arg.Inputs...)
 
 	// filter tables
 	tables := make([]*models.Table, 0)

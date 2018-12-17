@@ -86,7 +86,7 @@ func RunData() {
 }
 
 func loadData(arg *DataArg) *Data {
-	switch detectInputFormat(arg.Inputs[0]) {
+	switch models.DetectInputFormat(arg.Inputs[0]) {
 	case "xlsx":
 		return NewDataFromExcel(arg)
 	case "json":
@@ -139,7 +139,7 @@ func (this *tableMaps) GetColumn(tableName, columnName string) *models.Column {
 }
 
 func loadModelToMap(arg *DataArg) *tableMaps {
-	m := loadModel(arg.IgnoreTables, arg.Defines...)
+	m := models.LoadModel(arg.IgnoreTables, arg.Defines...)
 	res := &tableMaps{
 		Tables: make(map[string]*models.Table),
 	}

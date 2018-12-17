@@ -27,7 +27,7 @@ Usage:
     mysql_tool diff [--old OLD] [-f FORMAT] [-o OUTPUT] [--foreign-key] [--ignore-tables IGNORE_TABLES...] [--json-comment] INPUTS...
 
 Arg:
-    入力ファイルパス（json,xlsx） | mysql fqdn
+    入力ファイルパス（json, yaml, xlsx, dir） | mysql fqdn
 
 Options:
     -h --help                     Show this screen.
@@ -77,14 +77,14 @@ func RunDiff() {
 	arg := &DiffArg{}
 	copy.MapToStructWithTag(arguments, arg, "arg")
 
-	newModel := loadModel(arg.IgnoreTables, arg.Inputs...)
+	newModel := models.LoadModel(arg.IgnoreTables, arg.Inputs...)
 	var output string
 
 	var oldModel *models.Models
 	if arg.Old == "" {
 		oldModel = &models.Models{}
 	} else {
-		oldModel = loadModel(arg.IgnoreTables, arg.Old)
+		oldModel = models.LoadModel(arg.IgnoreTables, arg.Old)
 	}
 
 	switch arg.Format {
