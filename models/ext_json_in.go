@@ -11,7 +11,7 @@ func NewModelFromJson(ignoreTables[]string, pathes ...string) *Models {
 		m := &Models{}
 		b, err := ioutil.ReadFile(path)
 		checkError(err)
-		err = json.Unmarshal(b, m)
+		err = json.Unmarshal(b, &m.Tables)
 		checkError(err)
 
 		for _, t := range m.Tables {

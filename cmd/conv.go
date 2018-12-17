@@ -94,7 +94,7 @@ func marshalModel(m *models.Models, format string, fk bool, jsonComment bool) []
 	case "xlsx":
 		return m.ToExcelFile()
 	case "json":
-		return []byte(json.ToJson(m))
+		return []byte(json.ToJson(m.Tables))
 	case "sql":
 		return []byte(m.ToCreateSQL(fk, jsonComment))
 	}
