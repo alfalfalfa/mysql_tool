@@ -44,6 +44,7 @@ func (this Table) ToExcelSheet(sheet *xlsx.Sheet) {
 	SetHeaderStyle(tableHeaderRow.AddCell()).SetValue("")
 	SetHeaderStyle(tableHeaderRow.AddCell()).SetValue("COMMENT")
 	SetHeaderStyle(tableHeaderRow.AddCell()).SetValue("メタデータ(JSON)")
+	SetHeaderStyle(tableHeaderRow.AddCell()).SetValue("備考")
 	//sheet.Col(0).SetStyle(getHeaderStyle())
 
 	//テーブル行
@@ -59,6 +60,9 @@ func (this Table) ToExcelSheet(sheet *xlsx.Sheet) {
 	tableRow.AddCell().SetValue(this.Comment)
 	//TODO metadata
 	tableRow.AddCell().SetValue("")
+	for _, v := range this.Descriptions{
+		tableRow.AddCell().SetValue(v)
+	}
 
 	//カラムヘッダー行
 	columnHeaderRow := sheet.AddRow()
@@ -72,6 +76,7 @@ func (this Table) ToExcelSheet(sheet *xlsx.Sheet) {
 	SetHeaderStyle(columnHeaderRow.AddCell()).SetValue("REF")
 	SetHeaderStyle(columnHeaderRow.AddCell()).SetValue("COMMENT")
 	SetHeaderStyle(columnHeaderRow.AddCell()).SetValue("メタデータ(JSON)")
+	SetHeaderStyle(columnHeaderRow.AddCell()).SetValue("備考")
 
 	//Columns
 	for _, c := range this.Columns {
@@ -90,6 +95,7 @@ func (this Table) ToExcelSheet(sheet *xlsx.Sheet) {
 	SetHeaderStyle(indexHeaderRow.AddCell()).SetValue("")
 	SetHeaderStyle(indexHeaderRow.AddCell()).SetValue("COMMENT")
 	SetHeaderStyle(indexHeaderRow.AddCell()).SetValue("")
+	SetHeaderStyle(indexHeaderRow.AddCell()).SetValue("備考")
 
 	//Indexes
 	for _, ix := range this.Indexes {
@@ -121,6 +127,9 @@ func (this Column) ToExcelRow(row *xlsx.Row) {
 	row.AddCell().SetValue(this.Comment)
 	//TODO metadata
 	row.AddCell().SetValue("")
+	for _, v := range this.Descriptions{
+		row.AddCell().SetValue(v)
+	}
 }
 
 //TODO ASC,DESC
@@ -139,6 +148,9 @@ func (this Index) ToExcelRow(row *xlsx.Row) {
 	row.AddCell().SetValue("")
 	row.AddCell().SetValue(this.Comment)
 	row.AddCell().SetValue("")
+	for _, v := range this.Descriptions{
+		row.AddCell().SetValue(v)
+	}
 }
 
 func SetHeaderStyle(cell *xlsx.Cell) *xlsx.Cell {

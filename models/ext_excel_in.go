@@ -4,8 +4,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/tealeg/xlsx"
 	"github.com/app-studio/mysql_tool/util"
+	"github.com/tealeg/xlsx"
 )
 
 func NewModelFromExcel(ignoreTables []string, pathes ...string) *Models {
@@ -48,6 +48,7 @@ func NewTableFromExcelSheet(sheet *xlsx.Sheet) *Table {
 	t.ConnectionIndex = getCellValueAsInt(row, 5)
 	t.Comment = getCellValue(row, 8)
 	t.MetaDataJson = getCellValue(row, 9)
+	t.Descriptions = getBelowCellValues(row, 10)
 
 	t.Columns = NewColumnsFromExcelSheet(sheet)
 	t.Indexes = NewIndexesFromExcelSheet(sheet)
@@ -89,6 +90,7 @@ func NewColumnFromExcelRow(row *xlsx.Row) *Column {
 	c.Reference = util.CamelToSnake(getCellValue(row, 7))
 	c.Comment = getCellValue(row, 8)
 	c.MetaDataJson = getCellValue(row, 9)
+	c.Descriptions = getBelowCellValues(row, 10)
 
 	return c
 }
@@ -131,9 +133,26 @@ func NewIndexFromExcelRow(row *xlsx.Row) *Index {
 	}
 	ix.Unique = getCellValue(row, 3) != ""
 	ix.Comment = getCellValue(row, 8)
+	ix.Descriptions = getBelowCellValues(row, 10)
 	return ix
 }
 
+func getBelowCellValues(row *xlsx.Row, from int) []string {
+	column := from
+	var res []string
+	for {
+		v := getCellValue(row, column)
+		if v == "" {
+			break
+		}
+		if res == nil {
+			res = make([]string, 0)
+		}
+		res = append(res, v)
+		column++
+	}
+	return res
+}
 func getCellValue(row *xlsx.Row, num int) string {
 	if len(row.Cells) <= num {
 		return ""

@@ -64,6 +64,7 @@ type Table struct {
 	ConnectionIndex int
 	Comment         string
 	MetaDataJson    string
+	Descriptions    []string
 
 	Columns []*Column
 	Indexes []*Index
@@ -167,6 +168,7 @@ type Column struct {
 	Reference    string
 	Comment      string
 	MetaDataJson string
+	Descriptions []string
 
 	PreColumn *Column `json:"-"`
 
@@ -376,10 +378,11 @@ func normalizeDefault(c *Column) string {
 }
 
 type Index struct {
-	Name        string
-	ColumnNames []string
-	Unique      bool
-	Comment     string
+	Name         string
+	ColumnNames  []string
+	Unique       bool
+	Comment      string
+	Descriptions []string
 
 	//Columns []*Column `json:"-"`
 }
