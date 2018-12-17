@@ -120,7 +120,7 @@ func (this Column) ToExcelRow(row *xlsx.Row) {
 		row.AddCell().SetValue(this.PrimaryKey)
 	}
 
-	row.AddCell().SetValue(this.Default)
+	row.AddCell().SetValue(normalizeDefault(&this))
 
 	row.AddCell().SetValue(this.Extra)
 	row.AddCell().SetValue(this.Reference)

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"gopkg.in/guregu/null.v3"
 	"strings"
 
 	"database/sql"
@@ -33,15 +34,15 @@ func LoadMysqlTables(db *gorm.DB) []MysqlTable {
 }
 
 type MysqlColumn struct {
-	Field      string `gorm:"column:Field"`
-	Type       string `gorm:"column:Type"`
-	Null       string `gorm:"column:Null"`
-	Key        string `gorm:"column:Key"`
-	Comment    string `gorm:"column:Comment"`
-	Default    string `gorm:"column:Default"`
-	Collation  string `gorm:"column:Collation"`
-	Extra      string `gorm:"column:Extra"`
-	Privileges string `gorm:"column:Privileges"`
+	Field      string      `gorm:"column:Field"`
+	Type       string      `gorm:"column:Type"`
+	Null       string      `gorm:"column:Null"`
+	Key        string      `gorm:"column:Key"`
+	Comment    string      `gorm:"column:Comment"`
+	Default    null.String `gorm:"column:Default"`
+	Collation  string      `gorm:"column:Collation"`
+	Extra      string      `gorm:"column:Extra"`
+	Privileges string      `gorm:"column:Privileges"`
 }
 
 func (this MysqlColumn) isNull() bool {

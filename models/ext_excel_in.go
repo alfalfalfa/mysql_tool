@@ -6,6 +6,7 @@ import (
 
 	"github.com/app-studio/mysql_tool/util"
 	"github.com/tealeg/xlsx"
+	"gopkg.in/guregu/null.v3"
 )
 
 func NewModelFromExcel(ignoreTables []string, pathes ...string) *Models {
@@ -85,7 +86,8 @@ func NewColumnFromExcelRow(row *xlsx.Row) *Column {
 		c.PrimaryKey, err = strconv.Atoi(pkIndex)
 		checkError(err)
 	}
-	c.Default = getCellValue(row, 5)
+	c.Default = getDefaultCellValue(row, 5)
+
 	c.Extra = getCellValue(row, 6)
 	c.Reference = util.CamelToSnake(getCellValue(row, 7))
 	c.Comment = getCellValue(row, 8)
@@ -158,6 +160,26 @@ func getCellValue(row *xlsx.Row, num int) string {
 		return ""
 	}
 	return strings.TrimSpace(row.Cells[num].Value)
+}
+func getNullableCellValue(row *xlsx.Row, num int) null.String {
+	if len(row.Cells) <= num {
+		return null.NewString("", false)
+	}
+	v := strings.TrimSpace(row.Cells[num].Value)
+	if v == ""{
+		return null.NewString("", false)
+	}
+	return null.StringFrom(v)
+}
+func getDefaultCellValue(row *xlsx.Row, num int) null.String {
+	if len(row.Cells) <= num {
+		return null.NewString("", false)
+	}
+	v := strings.TrimSpace(row.Cells[num].Value)
+	if v == ""{
+		return null.NewString("", false)
+	}
+	return null.StringFrom(strings.Trim(v, "'"))
 }
 
 func getCellValueAsInt(row *xlsx.Row, num int) int {

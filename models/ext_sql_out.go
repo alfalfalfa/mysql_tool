@@ -3,8 +3,8 @@ package models
 import (
 	"bytes"
 	"fmt"
-	"strings"
 	"log"
+	"strings"
 )
 
 const SQL_PREFIX = `
@@ -65,10 +65,10 @@ func (this Table) ToCreateSQL(fk bool, jsonComment bool) string {
 	res.WriteString(strings.Join(defs, ",\n"))
 	res.WriteString(")")
 
-	if this.Engine != ""{
+	if this.Engine != "" {
 		res.WriteString(fmt.Sprintf("\nENGINE = %s", this.Engine))
 	}
-	if this.DefaultCharset != ""{
+	if this.DefaultCharset != "" {
 		res.WriteString(fmt.Sprintf("\nDEFAULT CHARACTER SET = %s", this.DefaultCharset))
 	}
 	if this.Comment != "" {
@@ -127,7 +127,7 @@ func (this Column) ToCreateSQL() string {
 	if this.NotNull {
 		res.WriteString(" NOT NULL")
 	}
-	if this.Default != "" {
+	if this.Default.Valid {
 		res.WriteString(" DEFAULT ")
 		res.WriteString(normalizeDefault(&this))
 	}
@@ -177,7 +177,7 @@ func (this Column) ToModifySQL(tableName string, order string) string {
 	res.WriteString(" MODIFY COLUMN")
 	res.WriteString(this.ToCreateSQL())
 	// NOT NULLでDefaultがないdatetimeを同じ位置にMODIFYしようとするとエラー発生することがあるため、順序に変更がない場合は順序変更クエリを出力しない
-	if order != ""{
+	if order != "" {
 		res.WriteString(" ")
 		res.WriteString(order)
 		//res.WriteString(getColumnOrder(&this))
@@ -190,7 +190,7 @@ func (this Column) ToFKAddSQL(tableName string) string {
 	res := bytes.NewBuffer(nil)
 	tmp := strings.Split(this.Reference, ".")
 
-	if len(tmp) < 2{
+	if len(tmp) < 2 {
 		log.Fatalf("invalid REF field format. require format:'table.column', actual value:'%s' in table:%s, column:%s", this.Reference, tableName, this.Name)
 	}
 	refTableName := tmp[0]

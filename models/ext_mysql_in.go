@@ -3,9 +3,9 @@ package models
 import (
 	"strings"
 
+	"github.com/app-studio/mysql_tool/util"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
-	"github.com/app-studio/mysql_tool/util"
 )
 
 func NewModelFromMysql(ignoreTables []string, fqdn string) *Models {

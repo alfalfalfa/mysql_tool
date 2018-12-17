@@ -1,6 +1,7 @@
 package models
 
 import (
+	"gopkg.in/guregu/null.v3"
 	"strings"
 
 	"regexp"
@@ -163,7 +164,7 @@ type Column struct {
 	NotNull    bool
 	PrimaryKey int
 
-	Default      string
+	Default      null.String
 	Extra        string
 	Reference    string
 	Comment      string
@@ -279,6 +280,48 @@ func (this Column) GetCSType() string {
 	}
 }
 
+func (this Column) IsNumeric() bool {
+	switch {
+
+	case regexp.MustCompile("^(bool|boolean|tinyint\\(1\\))").MatchString(this.Type):
+		return true
+
+	case regexp.MustCompile("^tinyint").MatchString(this.Type):
+		return true
+
+	case regexp.MustCompile("^smallint").MatchString(this.Type):
+		return true
+
+	case regexp.MustCompile("^mediumint").MatchString(this.Type):
+		return true
+
+	case regexp.MustCompile("^int").MatchString(this.Type):
+		return true
+
+	case regexp.MustCompile("^bigint").MatchString(this.Type):
+		return true
+
+	case regexp.MustCompile("^float").MatchString(this.Type):
+		return true
+
+	case regexp.MustCompile("^double").MatchString(this.Type):
+		return true
+
+	case regexp.MustCompile("^(tinytext|text|mediumtext|longtext|varchar|char)").MatchString(this.Type):
+		return false
+
+	case regexp.MustCompile("^(date|datetime|timestamp|time|year)").MatchString(this.Type):
+		return false
+
+	case regexp.MustCompile("^(tinyblob|blob|mediumblob|longblob)").MatchString(this.Type):
+		return false
+
+	default:
+		println(this.Type)
+		panic("not found type")
+	}
+}
+
 //go:generate stringer -type=ColumnChangeType
 type ColumnChangeType int
 
@@ -365,15 +408,17 @@ func normalizeDefault(c *Column) string {
 	if c == nil {
 		return ""
 	}
-	d := strings.TrimSpace(c.Default)
-
-	//文字列の末端quote処理
-	if strings.HasSuffix(d, "'") || strings.HasPrefix(d, "'") {
-		d = strings.Trim(d, "'")
-		//TODO escape quote
-		d = "'" + d + "'"
+	if !c.Default.Valid {
+		return ""
 	}
+	d := strings.TrimSpace(c.Default.String)
+	d = strings.Trim(d, "'")
 
+	if !c.IsNumeric() {
+		//TODO escape inner quote
+		d = "'" + d + "'"
+		return d
+	}
 	return d
 }
 
