@@ -29,6 +29,8 @@ Options:
             create table文を出力
         "json"
             Json出力
+        "yaml"
+            yaml出力
         "xlsx"
             Excel出力
         none
@@ -103,6 +105,12 @@ func detectOutputFormat(format string, output string) string {
 	if filepath.Ext(output) == ".json" {
 		return "json"
 	}
+	if filepath.Ext(output) == ".yaml" {
+		return "yaml"
+	}
+	if filepath.Ext(output) == ".yml" {
+		return "yml"
+	}
 	return "sql"
 }
 
@@ -117,6 +125,12 @@ func isDirOutput(output string) bool {
 		return false
 	}
 	if filepath.Ext(output) == ".json" {
+		return false
+	}
+	if filepath.Ext(output) == ".yaml" {
+		return false
+	}
+	if filepath.Ext(output) == ".yml" {
 		return false
 	}
 	return true

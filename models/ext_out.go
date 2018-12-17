@@ -11,6 +11,10 @@ func (m *Models) MarshalModel(format string, fk bool, jsonComment bool) []byte {
 		return m.ToExcelFile()
 	case "json":
 		return []byte(json.ToJson(m.Tables))
+	case "yaml":
+		return []byte(ToYaml(m.Tables))
+	case "yml":
+		return []byte(ToYaml(m.Tables))
 	case "sql":
 		return []byte(m.ToCreateSQL(fk, jsonComment))
 	}

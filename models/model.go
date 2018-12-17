@@ -1,7 +1,7 @@
 package models
 
 import (
-	"gopkg.in/guregu/null.v3"
+	"github.com/app-studio/mysql_tool/util/null"
 	"strings"
 
 	"regexp"
@@ -61,16 +61,16 @@ type Table struct {
 	//LogicalName    string
 	Engine          string
 	DefaultCharset  string
-	DbIndex         int
-	ConnectionIndex int
-	Comment         string
-	MetaDataJson    string
-	Descriptions    []string
+	DbIndex         int      `json:",omitempty" yaml:",omitempty"`
+	ConnectionIndex int      `json:",omitempty" yaml:",omitempty"`
+	Comment         string   `json:",omitempty" yaml:",omitempty"`
+	MetaDataJson    string   `json:",omitempty" yaml:",omitempty"`
+	Descriptions    []string `json:",omitempty" yaml:",omitempty"`
 
 	Columns []*Column
 	Indexes []*Index
 
-	PrimaryKeys []*Column `json:"-"`
+	PrimaryKeys []*Column `json:"-" yaml:"-"`
 }
 
 func (this Table) GetPrimaryKeyNum() int {
@@ -161,17 +161,17 @@ type Column struct {
 	Name util.CaseString
 	//LogicalName  string
 	Type       string
-	NotNull    bool
-	PrimaryKey int
+	NotNull    bool `json:",omitempty" yaml:",omitempty"`
+	PrimaryKey int  `json:",omitempty" yaml:",omitempty"`
 
-	Default      null.String
-	Extra        string
-	Reference    string
-	Comment      string
-	MetaDataJson string
-	Descriptions []string
+	Default      null.String `json:",omitempty" yaml:",omitempty"`
+	Extra        string      `json:",omitempty" yaml:",omitempty"`
+	Reference    string      `json:",omitempty" yaml:",omitempty"`
+	Comment      string      `json:",omitempty" yaml:",omitempty"`
+	MetaDataJson string      `json:",omitempty" yaml:",omitempty"`
+	Descriptions []string    `json:",omitempty" yaml:",omitempty"`
 
-	PreColumn *Column `json:"-"`
+	PreColumn *Column `json:"-" yaml:"-"`
 
 	//ReferenceTable  *Table  `json:"-"`
 	//ReferenceColumn *Column `json:"-"`
@@ -411,7 +411,7 @@ func normalizeDefault(c *Column) string {
 	if !c.Default.Valid {
 		return ""
 	}
-	d := strings.TrimSpace(c.Default.String)
+	d := strings.TrimSpace(c.Default.ValueOrZero())
 	d = strings.Trim(d, "'")
 
 	if !c.IsNumeric() {
@@ -425,9 +425,9 @@ func normalizeDefault(c *Column) string {
 type Index struct {
 	Name         string
 	ColumnNames  []string
-	Unique       bool
-	Comment      string
-	Descriptions []string
+	Unique       bool     `json:",omitempty" yaml:",omitempty"`
+	Comment      string   `json:",omitempty" yaml:",omitempty"`
+	Descriptions []string `json:",omitempty" yaml:",omitempty"`
 
 	//Columns []*Column `json:"-"`
 }

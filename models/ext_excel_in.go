@@ -6,7 +6,7 @@ import (
 
 	"github.com/app-studio/mysql_tool/util"
 	"github.com/tealeg/xlsx"
-	"gopkg.in/guregu/null.v3"
+	"github.com/app-studio/mysql_tool/util/null"
 )
 
 func loadTablesFromExcel(ignoreTables []string, path string) []*Table {
@@ -157,21 +157,21 @@ func getCellValue(row *xlsx.Row, num int) string {
 }
 func getNullableCellValue(row *xlsx.Row, num int) null.String {
 	if len(row.Cells) <= num {
-		return null.NewString("", false)
+		return null.NullString()
 	}
 	v := strings.TrimSpace(row.Cells[num].Value)
 	if v == "" {
-		return null.NewString("", false)
+		return null.NullString()
 	}
 	return null.StringFrom(v)
 }
 func getDefaultCellValue(row *xlsx.Row, num int) null.String {
 	if len(row.Cells) <= num {
-		return null.NewString("", false)
+		return null.NullString()
 	}
 	v := strings.TrimSpace(row.Cells[num].Value)
 	if v == "" {
-		return null.NewString("", false)
+		return null.NullString()
 	}
 	return null.StringFrom(strings.Trim(v, "'"))
 }

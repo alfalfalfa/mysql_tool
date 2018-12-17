@@ -1,7 +1,7 @@
 package models
 
 import (
-	"gopkg.in/guregu/null.v3"
+	"github.com/app-studio/mysql_tool/util/null"
 	"strings"
 
 	"database/sql"

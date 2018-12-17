@@ -407,7 +407,7 @@ func (this Data) ToSQL(args *DataArg) string {
 					// データが空の場合、columnを取得
 					if col := defines.GetColumn(t.Name, t.Keys[i]); col != nil {
 						// columnがある場合はdefaultを突っ込む
-						values = append(values, "'"+col.Default.String+"'")
+						values = append(values, "'"+col.Default.ValueOrZero()+"'")
 					} else {
 						// columnがない場合はそのまま突っ込む
 						values = append(values, "'"+v+"'")

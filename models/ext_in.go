@@ -23,6 +23,8 @@ func LoadModel(ignoreTables []string, inputs ...string) *Models {
 			tables = append(tables, loadTablesFromExcel(ignoreTables, path)...)
 		case "json":
 			tables = append(tables, loadTablesFromJson(ignoreTables, path)...)
+		case "yaml":
+			tables = append(tables, loadTablesFromYaml(ignoreTables, path)...)
 		default:
 			panic(fmt.Sprint("input path must be [.json, .yaml, .yml, .xlsx] inputs:", inputs))
 		}
@@ -40,6 +42,9 @@ func DetectInputFormat(input string) string {
 	}
 	if filepath.Ext(input) == ".json" {
 		return "json"
+	}
+	if filepath.Ext(input) == ".yaml" {
+		return "yaml"
 	}
 	return "mysql"
 }
