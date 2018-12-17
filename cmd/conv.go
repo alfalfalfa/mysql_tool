@@ -2,16 +2,14 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	"path/filepath"
 
-	"io/ioutil"
-
-	"github.com/docopt/docopt-go"
-	"github.com/app-studio/mysql_tool/util/copy"
-	"github.com/app-studio/mysql_tool/util/json"
 	"github.com/app-studio/mysql_tool/models"
+	"github.com/app-studio/mysql_tool/util/copy"
+	"github.com/docopt/docopt-go"
 )
 
 const usageConv = `mysql_tool conv
@@ -36,6 +34,8 @@ Options:
         none
             OUTPUTの拡張子から自動判別 （default: sql）
     -o OUTPUT, --output=OUTPUT    出力先
+        ディレクトリパス
+            1テーブル1ファイルで出力
         ファイルパス
             上書き
         none
@@ -65,35 +65,34 @@ func RunConv() {
 	m := models.LoadModel(arg.IgnoreTables, arg.Inputs...)
 
 	format := detectOutputFormat(arg.Format, arg.Output)
-	b := marshalModel(m, format, arg.ForeignKey, arg.JsonComment)
 
-	if arg.Output == "" {
-		if format == "xlsx" {
-			panic("xlsx stdout")
+	if isDirOutput(arg.Output) {
+		// output per-table files
+		os.MkdirAll(arg.Output, os.ModePerm)
+		for _, table := range m.Tables {
+			b := table.MarshalTable(format, arg.ForeignKey, arg.JsonComment)
+			checkError(ioutil.WriteFile(filepath.Join(arg.Output, table.Name.LowerSnake()+"."+format), b, os.ModePerm))
 		}
-		fmt.Println(string(b))
 	} else {
-		checkError(ioutil.WriteFile(arg.Output, b, os.ModePerm))
+		// output single file
+		b := m.MarshalModel(format, arg.ForeignKey, arg.JsonComment)
+		if arg.Output == "" {
+			if format == "xlsx" {
+				panic("xlsx stdout")
+			}
+			fmt.Println(string(b))
+		} else {
+			checkError(ioutil.WriteFile(arg.Output, b, os.ModePerm))
+		}
 	}
 }
-
-
-func marshalModel(m *models.Models, format string, fk bool, jsonComment bool) []byte {
-	switch format {
-	case "xlsx":
-		return m.ToExcelFile()
-	case "json":
-		return []byte(json.ToJson(m.Tables))
-	case "sql":
-		return []byte(m.ToCreateSQL(fk, jsonComment))
-	}
-	panic(fmt.Sprint("output format invalid:", format))
-}
-
 
 func detectOutputFormat(format string, output string) string {
 	if format != "" {
 		return format
+	}
+	if format == "" {
+		return "sql"
 	}
 	if filepath.Ext(output) == ".sql" {
 		return "sql"
@@ -105,4 +104,20 @@ func detectOutputFormat(format string, output string) string {
 		return "json"
 	}
 	return "sql"
+}
+
+func isDirOutput(output string) bool {
+	if output == "" {
+		return false
+	}
+	if filepath.Ext(output) == ".sql" {
+		return false
+	}
+	if filepath.Ext(output) == ".xlsx" {
+		return false
+	}
+	if filepath.Ext(output) == ".json" {
+		return false
+	}
+	return true
 }
