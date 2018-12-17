@@ -68,6 +68,9 @@ func NewTableFromMysql(db *gorm.DB, tableInfo MysqlTable) *Table {
 		if columnInfo.Key == "PRI" {
 			pkIndex++
 			c.PrimaryKey = pkIndex
+			if tableInfo.AutoIncrement == 1{
+				c.Extra = "AUTO_INCREMENT"
+			}
 		}
 
 		t.Columns = append(t.Columns, c)
@@ -110,6 +113,8 @@ func NewColumnFromMysql(db *gorm.DB, columnInfo MysqlColumn) *Column {
 
 	c.Comment = columnInfo.Comment
 	//c.MetaDataJson = strings.TrimSpace(row.Cells[8].Value)
+
+	c.Default = columnInfo.Default
 
 	return c
 }
