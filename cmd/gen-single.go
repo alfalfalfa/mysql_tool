@@ -2,7 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/flosch/pongo2"
 	"os"
+	"path"
+	"regexp"
 
 	"bytes"
 	"text/template"
@@ -13,24 +16,29 @@ import (
 
 	"io/ioutil"
 
-	"github.com/docopt/docopt-go"
-	"github.com/app-studio/mysql_tool/util/copy"
 	"github.com/app-studio/mysql_tool/models"
+	"github.com/app-studio/mysql_tool/util/copy"
+	"github.com/docopt/docopt-go"
 	"golang.org/x/tools/imports"
 )
 
-const usageGen = `mysql_tool gen
-    テーブル定義からgolangの text/template でテキスト生成
+const usageGen = `mysql_tool gen-single
+    テーブル定義から1テキスト生成
 
 Usage:
-    mysql_tool gen -h | --help
-    mysql_tool gen (-t TEMPLATE) (-o OUTPUT) [--tables TABLES...] [--ignore-tables IGNORE_TABLES...] INPUTS...
+    mysql_tool gen-single -h | --help
+    mysql_tool gen-single [--template-type=<TEMPLATE_TYPE>] [--tables TABLES...] [--ignore-tables IGNORE_TABLES...] <TEMPLATE_PATH> <OUTPUT_PATH> INPUTS...
 
 Arg:
-    入力ファイルパス（json, yaml, xlsx, dir） | mysql fqdn
+	<TEMPLATE_PATH>        (必須)テンプレートファイルパス
+	<OUTPUT_PATH>  (必須)出力ファイルパス
+    INPUTS...				入力ファイルパス（json, yaml, xlsx, dir） | mysql fqdn
 
 Options:
     -h --help                             Show this screen.
+    --template-type=<TEMPLATE_TYPE>     テンプレート種別 [default:go]
+										    go      text/template
+										    pongo2  pongo2
     -t TEMPLATE, --template=TEMPLATE      テンプレートファイルパス
     -o OUTPUT, --output=OUTPUT            出力先
         ファイルパス
@@ -41,26 +49,26 @@ Options:
     --ignore-tables=IGNORE_TABLES...      無視テーブル
 `
 
-type GenArg struct {
-	Template     string   `arg:"--template"`
-	Output       string   `arg:"--output"`
+type GenSingleArg struct {
+	TemplatePath string   `arg:"<TEMPLATE_PATH>"`
+	OutputPath   string   `arg:"<OUTPUT_PATH>"`
+	TemplateType string   `arg:"--template-type"`
 	Inputs       []string `arg:"INPUTS"`
 	Tables       []string `arg:"--tables"`
 	IgnoreTables []string `arg:"--ignore-tables"`
 }
 
 type TemplateData struct {
-	PackageName string
-	Tables      []*models.Table
+	Tables []*models.Table
 }
 
-func RunGen() {
+func RunGenSingle() {
 	arguments, err := docopt.Parse(usageGen, os.Args[1:], true, "", false)
 	if err != nil {
 		panic(err)
 	}
 	//fmt.Println(json.ToJson(arguments))
-	arg := &GenArg{}
+	arg := &GenSingleArg{}
 	copy.MapToStructWithTag(arguments, arg, "arg")
 
 	m := models.LoadModel(arg.IgnoreTables, arg.Inputs...)
@@ -76,30 +84,48 @@ func RunGen() {
 		tables = append(tables, t)
 	}
 
-	var data TemplateData = TemplateData{
-		PackageName: filepath.Base(filepath.Dir(arg.Output)),
-		Tables:      tables,
-	}
-
 	//fmt.Println(json.ToJson(args))
+	if arg.TemplateType == "go" {
+		funcMap := template.FuncMap{
+			// Math functions
+			"add":      add,
+			"subtract": subtract,
+			"multiply": multiply,
+			"divide":   divide,
+		}
+		tmpl := template.Must(template.New(filepath.Base(arg.TemplatePath)).Funcs(funcMap).ParseFiles(arg.TemplatePath))
+		data := TemplateData{
+			Tables: tables,
+		}
+		buf := bytes.NewBuffer(nil)
+		err = tmpl.Execute(buf, data)
+		e(err)
 
-	funcMap := template.FuncMap{
-		// Math functions
-		"add":      add,
-		"subtract": subtract,
-		"multiply": multiply,
-		"divide":   divide,
+		b := buf.Bytes()
+		if filepath.Ext(arg.OutputPath) == ".go" {
+			writeGoSource(arg.OutputPath, buf.Bytes())
+		} else {
+			e(ioutil.WriteFile(arg.OutputPath, b, os.ModePerm))
+		}
 	}
-	tmpl := template.Must(template.New(filepath.Base(arg.Template)).Funcs(funcMap).ParseFiles(arg.Template))
-	buf := bytes.NewBuffer(nil)
-	err = tmpl.Execute(buf, data)
-	checkError(err)
 
-	b := buf.Bytes()
-	if filepath.Ext(arg.Output) == ".go" {
-		writeGoSource(arg.Output, buf.Bytes())
-	} else {
-		checkError(ioutil.WriteFile(arg.Output, b, os.ModePerm))
+	if arg.TemplateType == "pongo2" {
+		tpl, err := pongo2.DefaultSet.FromFile(arg.TemplatePath)
+		e(err)
+
+		context := pongo2.Context{
+			"tables": tables,
+		}
+		res, err := tpl.Execute(context)
+		e(err)
+
+		// 連続した改行を詰める
+		re := regexp.MustCompile("\n+")
+		res = re.ReplaceAllString(res, "\n")
+
+		os.MkdirAll(path.Dir(arg.OutputPath), os.ModePerm)
+		ioutil.WriteFile(arg.OutputPath, []byte(res), os.ModePerm)
+		fmt.Println("write:", arg.OutputPath)
 	}
 }
 

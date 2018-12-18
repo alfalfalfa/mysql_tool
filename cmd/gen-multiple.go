@@ -66,7 +66,7 @@ type MultipleTemplateData struct {
 	Table  *models.Table
 }
 
-func RunMultipleGen() {
+func RunGenMultiple() {
 	arguments, err := docopt.Parse(usageGenMultiple, os.Args[1:], true, "", false)
 	if err != nil {
 		panic(err)

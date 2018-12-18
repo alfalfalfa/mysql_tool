@@ -20,7 +20,7 @@ Arg:
     "conv"           テーブル定義ドキュメント or データベース間の変換
     "diff"           テーブル定義の差分出力(マイグレーション用)
     "data"           データ定義の変換、mysql入出力
-    "gen"            テーブル定義からgolangの text/template でテキスト生成
+    "gen-single"     テーブル定義から1テキスト生成
     "gen-multiple"   テーブル定義から各テーブル毎にテキスト生成
     "exec"           sql実行(接続成功までリトライ)
 
@@ -50,10 +50,10 @@ func main() {
 		cmd.RunDiff()
 	case "data":
 		cmd.RunData()
-	case "gen":
-		cmd.RunGen()
+	case "gen-single":
+		cmd.RunGenSingle()
 	case "gen-multiple":
-		cmd.RunMultipleGen()
+		cmd.RunGenMultiple()
 	case "exec":
 		cmd.RunExec()
 	}
