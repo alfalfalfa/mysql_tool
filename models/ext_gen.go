@@ -17,6 +17,6 @@ func (c Column) IsUnique() bool {
 	return false
 }
 
-func (c Column) IsAutoIncrementPK() bool {
+func (c Column) IsAutoIncrement() bool {
 	return c.Extra == "AUTO_INCREMENT"
 }
