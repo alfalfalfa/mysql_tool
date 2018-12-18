@@ -126,7 +126,7 @@ func RunDiff() {
 	}
 
 	if output == "" {
-		fmt.Println("no diff")
+		//fmt.Println("no diff")
 		return
 	}
 	if arg.Output == "" {
