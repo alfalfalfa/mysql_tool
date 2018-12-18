@@ -6,8 +6,6 @@ import (
 
 	"regexp"
 
-	"sort"
-
 	"github.com/app-studio/mysql_tool/util"
 )
 
@@ -27,26 +25,6 @@ func (a *Models) Less(i, j int) bool {
 	return a.Tables[i].Name.LowerSnake() < a.Tables[j].Name.LowerSnake()
 }
 
-func (this *Models) resolveReferences() {
-	//a-z table order
-	sort.Sort(this)
-
-	//column order
-	for _, t := range this.Tables {
-		var pre *Column
-		for _, c := range t.Columns {
-			c.PreColumn = pre
-			pre = c
-		}
-	}
-
-	//TODO diff,codegen用Ref解決, Table並び替え、IndexのColumns解決
-	for _, t := range this.Tables {
-		t.PrimaryKeys = t.getPrimaryKeys()
-	}
-
-}
-
 func (this Models) GetTable(name string) *Table {
 	for _, t := range this.Tables {
 		if t.Name.Lower() == strings.ToLower(name) {
@@ -57,8 +35,8 @@ func (this Models) GetTable(name string) *Table {
 }
 
 type Table struct {
-	Name util.CaseString
 	//LogicalName    string
+	Name            util.CaseString
 	Engine          string
 	DefaultCharset  string
 	DbIndex         int      `json:",omitempty" yaml:",omitempty"`
@@ -66,11 +44,12 @@ type Table struct {
 	Comment         string   `json:",omitempty" yaml:",omitempty"`
 	MetaDataJson    string   `json:",omitempty" yaml:",omitempty"`
 	Descriptions    []string `json:",omitempty" yaml:",omitempty"`
+	Columns         []*Column
+	Indexes         []*Index
 
-	Columns []*Column
-	Indexes []*Index
-
-	PrimaryKeys []*Column `json:"-" yaml:"-"`
+	PrimaryKeys       []*Column   `json:"-" yaml:"-"`
+	References        []*Reference `json:"-" yaml:"-"`
+	InverseReferences []*Reference `json:"-" yaml:"-"`
 }
 
 func (this Table) GetPrimaryKeyNum() int {
@@ -158,12 +137,11 @@ func (this Table) IsChange(other *Table) bool {
 }
 
 type Column struct {
-	Name util.CaseString
 	//LogicalName  string
-	Type       string
-	NotNull    bool `json:",omitempty" yaml:",omitempty"`
-	PrimaryKey int  `json:",omitempty" yaml:",omitempty"`
-
+	Name         util.CaseString
+	Type         string
+	NotNull      bool        `json:",omitempty" yaml:",omitempty"`
+	PrimaryKey   int         `json:",omitempty" yaml:",omitempty"`
 	Default      null.String `json:",omitempty" yaml:",omitempty"`
 	Extra        string      `json:",omitempty" yaml:",omitempty"`
 	Reference    string      `json:",omitempty" yaml:",omitempty"`
@@ -171,10 +149,11 @@ type Column struct {
 	MetaDataJson string      `json:",omitempty" yaml:",omitempty"`
 	Descriptions []string    `json:",omitempty" yaml:",omitempty"`
 
-	PreColumn *Column `json:"-" yaml:"-"`
-
-	//ReferenceTable  *Table  `json:"-"`
-	//ReferenceColumn *Column `json:"-"`
+	Table *Table     `json:"-" yaml:"-"`
+	PreColumn         *Column     `json:"-" yaml:"-"`
+	Indexes           []*Index    `json:"-" yaml:"-"`
+	References        []*Reference `json:"-" yaml:"-"`
+	InverseReferences []*Reference `json:"-" yaml:"-"`
 }
 
 func (this Column) isNotNull(notNull string, null string) string {
@@ -429,7 +408,7 @@ type Index struct {
 	Comment      string   `json:",omitempty" yaml:",omitempty"`
 	Descriptions []string `json:",omitempty" yaml:",omitempty"`
 
-	//Columns []*Column `json:"-"`
+	Columns []*Column `json:"-" yaml:"-"`
 }
 
 func (this Index) IsContainColumnName(name string) bool {
