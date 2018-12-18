@@ -47,7 +47,7 @@ type Table struct {
 	Columns         []*Column
 	Indexes         []*Index
 
-	PrimaryKeys       []*Column   `json:"-" yaml:"-"`
+	PrimaryKeys       []*Column    `json:"-" yaml:"-"`
 	References        []*Reference `json:"-" yaml:"-"`
 	InverseReferences []*Reference `json:"-" yaml:"-"`
 }
@@ -149,9 +149,9 @@ type Column struct {
 	MetaDataJson string      `json:",omitempty" yaml:",omitempty"`
 	Descriptions []string    `json:",omitempty" yaml:",omitempty"`
 
-	Table *Table     `json:"-" yaml:"-"`
-	PreColumn         *Column     `json:"-" yaml:"-"`
-	Indexes           []*Index    `json:"-" yaml:"-"`
+	Table             *Table       `json:"-" yaml:"-"`
+	PreColumn         *Column      `json:"-" yaml:"-"`
+	Indexes           []*Index     `json:"-" yaml:"-"`
 	References        []*Reference `json:"-" yaml:"-"`
 	InverseReferences []*Reference `json:"-" yaml:"-"`
 }
@@ -251,6 +251,69 @@ func (this Column) GetCSType() string {
 
 	case regexp.MustCompile("^(tinyblob|blob|mediumblob|longblob)").MatchString(this.Type):
 		return "byte[]"
+
+	default:
+		println(this.Type)
+		panic("not found type")
+
+	}
+}
+
+/*
+unused type(ruby)
+	primary_key
+	decimal
+*/
+func (this Column) GetActiveRecordType() string {
+	switch {
+
+	case regexp.MustCompile("^(bool|boolean|tinyint\\(1\\))").MatchString(this.Type):
+		return "boolean"
+
+	case regexp.MustCompile("^tinyint").MatchString(this.Type):
+		return "integer"
+
+	case regexp.MustCompile("^smallint").MatchString(this.Type):
+		return "integer"
+
+	case regexp.MustCompile("^mediumint").MatchString(this.Type):
+		return "integer"
+
+	case regexp.MustCompile("^int").MatchString(this.Type):
+		return "integer"
+
+	case regexp.MustCompile("^bigint").MatchString(this.Type):
+		return "integer"
+
+	case regexp.MustCompile("^year").MatchString(this.Type):
+		return "integer"
+
+	case regexp.MustCompile("^float").MatchString(this.Type):
+		return "float"
+
+	case regexp.MustCompile("^double").MatchString(this.Type):
+		return "float"
+
+	case regexp.MustCompile("^(varchar|char)").MatchString(this.Type):
+		return "string"
+
+	case regexp.MustCompile("^(tinytext|text|mediumtext|longtext)").MatchString(this.Type):
+		return "text"
+
+	case regexp.MustCompile("^(date)").MatchString(this.Type):
+		return "date"
+
+	case regexp.MustCompile("^(datetime)").MatchString(this.Type):
+		return "datetime"
+
+	case regexp.MustCompile("^(time)").MatchString(this.Type):
+		return "time"
+
+	case regexp.MustCompile("^(timestamp)").MatchString(this.Type):
+		return "timestamp"
+
+	case regexp.MustCompile("^(tinyblob|blob|mediumblob|longblob)").MatchString(this.Type):
+		return "binary"
 
 	default:
 		println(this.Type)
