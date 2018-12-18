@@ -1,13 +1,12 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/flosch/pongo2"
 	"os"
 	"path"
 	"regexp"
-
-	"bytes"
 	"text/template"
 
 	"path/filepath"
@@ -27,20 +26,19 @@ const usageGen = `mysql_tool gen-single
 
 Usage:
     mysql_tool gen-single -h | --help
-    mysql_tool gen-single [--template-type=<TEMPLATE_TYPE>] [--tables TABLES...] [--ignore-tables IGNORE_TABLES...] <TEMPLATE_PATH> <OUTPUT_PATH> INPUTS...
+    mysql_tool gen-single [--template-type=<TEMPLATE_TYPE>] [--tables TABLES...] [--ignore-tables IGNORE_TABLES...] [-o OUTPUT_PATH] <TEMPLATE_PATH> INPUTS...
 
 Arg:
 	<TEMPLATE_PATH>        (必須)テンプレートファイルパス
-	<OUTPUT_PATH>  (必須)出力ファイルパス
     INPUTS...				入力ファイルパス（json, yaml, xlsx, dir） | mysql fqdn
 
 Options:
     -h --help                             Show this screen.
-    --template-type=<TEMPLATE_TYPE>     テンプレート種別 [default:go]
-										    go      text/template
-										    pongo2  pongo2
+    --template-type=<TEMPLATE_TYPE>       テンプレート種別 [default:go]
+										     go      text/template
+										     pongo2  pongo2
     -t TEMPLATE, --template=TEMPLATE      テンプレートファイルパス
-    -o OUTPUT, --output=OUTPUT            出力先
+    -o OUTPUT_PATH, --output=OUTPUT_PATH  出力先
         ファイルパス
             上書き
         none
@@ -51,7 +49,7 @@ Options:
 
 type GenSingleArg struct {
 	TemplatePath string   `arg:"<TEMPLATE_PATH>"`
-	OutputPath   string   `arg:"<OUTPUT_PATH>"`
+	OutputPath   string   `arg:"--output"`
 	TemplateType string   `arg:"--template-type"`
 	Inputs       []string `arg:"INPUTS"`
 	Tables       []string `arg:"--tables"`
@@ -100,13 +98,7 @@ func RunGenSingle() {
 		buf := bytes.NewBuffer(nil)
 		err = tmpl.Execute(buf, data)
 		e(err)
-
-		b := buf.Bytes()
-		if filepath.Ext(arg.OutputPath) == ".go" {
-			writeGoSource(arg.OutputPath, buf.Bytes())
-		} else {
-			e(ioutil.WriteFile(arg.OutputPath, b, os.ModePerm))
-		}
+		writeOrPrint(arg.OutputPath, buf.String())
 	}
 
 	if arg.TemplateType == "pongo2" {
@@ -119,13 +111,27 @@ func RunGenSingle() {
 		res, err := tpl.Execute(context)
 		e(err)
 
-		// 連続した改行を詰める
-		re := regexp.MustCompile("\n+")
-		res = re.ReplaceAllString(res, "\n")
+		writeOrPrint(arg.OutputPath, res)
+	}
+}
 
-		os.MkdirAll(path.Dir(arg.OutputPath), os.ModePerm)
-		ioutil.WriteFile(arg.OutputPath, []byte(res), os.ModePerm)
-		fmt.Println("write:", arg.OutputPath)
+func writeOrPrint(outputPath string, data string) {
+	// 連続した改行を詰める
+	re := regexp.MustCompile("\n+")
+	data = re.ReplaceAllString(data, "\n")
+
+	if outputPath == "" {
+		fmt.Println(data)
+	} else if filepath.Ext(outputPath) == ".go" {
+		os.MkdirAll(path.Dir(outputPath), os.ModePerm)
+		e(writeGoSource(outputPath, []byte(data)))
+	} else {
+		os.MkdirAll(path.Dir(outputPath), os.ModePerm)
+		e(ioutil.WriteFile(outputPath, []byte(data), os.ModePerm))
+	}
+
+	if outputPath != "" {
+		fmt.Println("write:", outputPath)
 	}
 }
 
