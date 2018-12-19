@@ -1,5 +1,7 @@
 package models
 
+import "strings"
+
 func (t Table) FirstPKName() string {
 	return t.GetPK().Name.LowerSnake()
 }
@@ -18,5 +20,5 @@ func (c Column) IsUnique() bool {
 }
 
 func (c Column) IsAutoIncrement() bool {
-	return c.Extra == "AUTO_INCREMENT"
+	return strings.Contains(c.Extra, "AUTO_INCREMENT")
 }

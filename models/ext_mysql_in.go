@@ -68,9 +68,7 @@ func NewTableFromMysql(db *gorm.DB, tableInfo MysqlTable) *Table {
 		if columnInfo.Key == "PRI" {
 			pkIndex++
 			c.PrimaryKey = pkIndex
-			if tableInfo.AutoIncrement == 1{
-				c.Extra = "AUTO_INCREMENT"
-			}
+			c.Extra = columnInfo.Extra
 		}
 
 		t.Columns = append(t.Columns, c)

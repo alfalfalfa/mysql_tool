@@ -33,6 +33,9 @@ func (this *Models) resolveReferences() {
 
 			// set Table ref
 			c.Table = t
+
+			// fix Extra to upper case
+			c.Extra = strings.ToUpper(c.Extra)
 		}
 
 		// set index:column ref

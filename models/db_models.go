@@ -12,7 +12,6 @@ import (
 type MysqlTable struct {
 	Name          string `gorm:"column:Name"`
 	Engine        string `gorm:"column:Engine"`
-	AutoIncrement int    `gorm:"column:Auto_increment"`
 	Collation     string `gorm:"column:Collation"`
 	Comment       string `gorm:"column:Comment"`
 }
