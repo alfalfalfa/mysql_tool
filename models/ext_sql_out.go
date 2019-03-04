@@ -216,6 +216,10 @@ func (this Column) ToRenameSQL(tableName string, to *Column) string {
 	res.WriteString(this.Name.LowerSnake())
 	res.WriteString("`")
 	res.WriteString(to.ToCreateSQL())
+
+	res.WriteString(" ")
+	res.WriteString(getColumnOrder(to))
+
 	res.WriteString(";\n")
 	return res.String()
 }
