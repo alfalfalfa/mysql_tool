@@ -363,6 +363,15 @@ func (this Column) IsNumeric() bool {
 		panic("not found type")
 	}
 }
+func (this Column) IsTime() bool {
+	switch {
+	case regexp.MustCompile("^(date|datetime|timestamp|time|year)").MatchString(this.Type):
+		return true
+	default:
+		return false
+	}
+
+}
 
 //go:generate stringer -type=ColumnChangeType
 type ColumnChangeType int
@@ -456,7 +465,8 @@ func normalizeDefault(c *Column) string {
 	d := strings.TrimSpace(c.Default.ValueOrZero())
 	d = strings.Trim(d, "'")
 
-	if !c.IsNumeric() {
+	if !c.IsNumeric() &&
+		!(c.IsTime() && (strings.ToUpper(d) == "CURRENT_TIMESTAMP" || strings.ToUpper(d) == "NOW()") ) {
 		//TODO escape inner quote
 		d = "'" + d + "'"
 		return d

@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"github.com/app-studio/mysql_tool/util/null"
 )
 
 const SQL_PREFIX = `
 BEGIN;
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,STRICT_ALL_TABLES,NO_ENGINE_SUBSTITUTION,ALLOW_INVALID_DATES';
 
 `
 const SQL_SUFFIX = `
@@ -119,7 +120,7 @@ func (this Table) ToAlterSQL() string {
 func (this Column) ToCreateSQL() string {
 	//  `login_bonus_id` INT NOT NULL COMMENT 'ログインボーナスのグルーピングID',
 	res := bytes.NewBuffer(nil)
-	res.WriteString("  ")
+	res.WriteString(" ")
 	res.WriteString("`")
 	res.WriteString(this.Name.LowerSnake())
 	res.WriteString("` ")
@@ -142,6 +143,23 @@ func (this Column) ToCreateSQL() string {
 	}
 
 	return res.String()
+}
+
+func (this Column) ToAddSQLWithDummyDefault(tableName string) string {
+	// 時間型であれば、仮のデフォルト設定してAlter、その後デフォルト外す
+	if this.IsTime() && this.NotNull && !this.Default.Valid{
+		res := bytes.NewBuffer(nil)
+
+		this.Default = null.StringFrom("CURRENT_TIMESTAMP")
+		res.WriteString(this.ToAddSQL(tableName))
+
+		this.Default = null.NullString()
+		res.WriteString(this.ToModifySQL(tableName, ""))
+
+		return res.String()
+	}else{
+		return this.ToAddSQL(tableName)
+	}
 }
 
 func (this Column) ToAddSQL(tableName string) string {
@@ -182,6 +200,22 @@ func (this Column) ToModifySQL(tableName string, order string) string {
 		res.WriteString(order)
 		//res.WriteString(getColumnOrder(&this))
 	}
+	res.WriteString(";\n")
+	return res.String()
+}
+
+func (this Column) ToRenameSQL(tableName string, to *Column) string {
+	res := bytes.NewBuffer(nil)
+	res.WriteString("ALTER TABLE `")
+	res.WriteString(tableName)
+	res.WriteString("`")
+	res.WriteString(" CHANGE")
+
+	res.WriteString(" ")
+	res.WriteString("`")
+	res.WriteString(this.Name.LowerSnake())
+	res.WriteString("`")
+	res.WriteString(to.ToCreateSQL())
 	res.WriteString(";\n")
 	return res.String()
 }

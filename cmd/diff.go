@@ -13,10 +13,10 @@ import (
 
 	"path/filepath"
 
-	"github.com/docopt/docopt-go"
-	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/app-studio/mysql_tool/models"
 	"github.com/app-studio/mysql_tool/util/copy"
+	"github.com/docopt/docopt-go"
+	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
 const usageDiff = `mysql_tool diff
@@ -228,12 +228,22 @@ func diffDefines(arg *DiffArg, newModel, oldModel *models.Models) (alter, revert
 		newTable := newModel.GetTable(tableName)
 		oldTable := oldModel.GetTable(tableName)
 		//カラム追加/削除
-		adds, drops, _ := diffColumnByName(newTable, oldTable)
+		adds, drops, _, renames := diffColumnByDefine(newTable, oldTable)
+
 		for _, c := range drops {
+			// 日付型, NOT NULLの場合の仮のデフォルト値を自動で設定する TODO オプションで切り替える？
+			//revertBuf.WriteString(c.ToAddSQLWithDummyDefault(tableName))
 			revertBuf.WriteString(c.ToAddSQL(tableName))
 		}
 		for _, c := range adds {
+			// 日付型, NOT NULLの場合の仮のデフォルト値を自動で設定する TODO オプションで切り替える？
+			//alterBuf.WriteString(c.ToAddSQLWithDummyDefault(tableName))
 			alterBuf.WriteString(c.ToAddSQL(tableName))
+		}
+
+		for _, r := range renames{
+			alterBuf.WriteString(r.Old.ToRenameSQL(tableName, r.New))
+			revertBuf.WriteString(r.New.ToRenameSQL(tableName, r.Old))
 		}
 	}
 
@@ -292,7 +302,7 @@ func diffDefines(arg *DiffArg, newModel, oldModel *models.Models) (alter, revert
 		oldTable := oldModel.GetTable(tableName)
 
 		//カラム追加/削除
-		adds, drops, _ := diffColumnByName(newTable, oldTable)
+		adds, drops, _, _ := diffColumnByDefine(newTable, oldTable)
 		for _, c := range drops {
 			alterBuf.WriteString(c.ToDropSQL(tableName))
 		}
@@ -391,6 +401,83 @@ func diffColumnByName(new, old *models.Table) (addColumns, dropColumns []*models
 		}
 	}
 	return
+}
+
+type renameOperation struct {
+	Old *models.Column
+	New *models.Column
+}
+
+func diffColumnByDefine(new, old *models.Table) (addColumns, dropColumns []*models.Column, remainNames []string, renameOperations []renameOperation) {
+	// 旧テーブル定義にカラム定義がないもの
+	missingNewColumns := make([]*models.Column, 0)
+	// 新テーブル定義にカラム定義がないもの
+	missingOldColumns := make([]*models.Column, 0)
+	remainNames = make([]string, 0)
+
+	for _, newColumn := range new.Columns {
+		oldColumn := old.GetColumn(newColumn.Name.LowerSnake())
+		if oldColumn == nil {
+			missingNewColumns = append(missingNewColumns, newColumn)
+		} else {
+			remainNames = append(remainNames, newColumn.Name.LowerSnake())
+		}
+	}
+
+	for _, oldColumn := range old.Columns {
+		newColumn := new.GetColumn(oldColumn.Name.LowerSnake())
+		if newColumn == nil {
+			missingOldColumns = append(missingOldColumns, oldColumn)
+		}
+	}
+
+	addColumns = make([]*models.Column, 0)
+	dropColumns = make([]*models.Column, 0)
+
+	renameOperations = make([]renameOperation, 0)
+	for _, addColumn := range missingNewColumns {
+		similarColumn := getSimilarColumn(missingOldColumns, addColumn, renameOperations)
+		if similarColumn != nil{
+			renameOperations = append(renameOperations, renameOperation {
+				Old: similarColumn,
+				New: addColumn,
+			})
+		}else{
+			addColumns = append(addColumns, addColumn)
+		}
+	}
+	for _, dropColumn := range missingOldColumns {
+		if !containsOld(renameOperations, dropColumn){
+			dropColumns = append(dropColumns, dropColumn)
+		}
+	}
+	return
+}
+
+func getSimilarColumn(columns []*models.Column, column *models.Column, renameOperations []renameOperation) *models.Column{
+	for _, c := range columns {
+		if containsOld(renameOperations, column){
+			continue
+		}
+		changeType := c.IsChange(column)
+		// 追加/削除されたカラムの中で、型とコメント(論理名)、NotNull制約, Default, Extraが同一であればリネームとみなす
+		if changeType == models.ColumnChangeType_Same {
+			// 追加/削除されたカラムの中で、型とコメント(論理名)が同一であればリネームとみなす
+			//if changeType != models.ColumnChangeType_Type && changeType != models.ColumnChangeType_Comment {
+			return c
+		}
+	}
+
+	return nil
+}
+func containsOld(renameOperations []renameOperation, column *models.Column) bool{
+	for _, r := range renameOperations {
+		if r.Old == column{
+			return true
+		}
+	}
+
+	return false
 }
 
 func diffIndexBySQL(new, old *models.Table) (adds, drops []*models.Index, modifyNames []string) {
