@@ -449,7 +449,7 @@ func normalizeMysqlType(t string) string {
 
 func getColumnOrder(c *Column) string {
 	if c.PreColumn != nil {
-		return " AFTER " + c.PreColumn.Name.LowerSnake()
+		return " AFTER `" + c.PreColumn.Name.LowerSnake() + "`"
 	} else {
 		return " FIRST"
 	}
