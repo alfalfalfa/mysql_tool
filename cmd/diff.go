@@ -230,6 +230,10 @@ func diffDefines(arg *DiffArg, newModel, oldModel *models.Models) (alter, revert
 		//カラム追加/削除
 		adds, drops, _, renames := diffColumnByDefine(newTable, oldTable)
 
+		for _, r := range renames{
+			alterBuf.WriteString(r.Old.ToRenameSQL(tableName, r.New))
+			revertBuf.WriteString(r.New.ToRenameSQL(tableName, r.Old))
+		}
 		for _, c := range drops {
 			// 日付型, NOT NULLの場合の仮のデフォルト値を自動で設定する TODO オプションで切り替える？
 			//revertBuf.WriteString(c.ToAddSQLWithDummyDefault(tableName))
@@ -239,11 +243,6 @@ func diffDefines(arg *DiffArg, newModel, oldModel *models.Models) (alter, revert
 			// 日付型, NOT NULLの場合の仮のデフォルト値を自動で設定する TODO オプションで切り替える？
 			//alterBuf.WriteString(c.ToAddSQLWithDummyDefault(tableName))
 			alterBuf.WriteString(c.ToAddSQL(tableName))
-		}
-
-		for _, r := range renames{
-			alterBuf.WriteString(r.Old.ToRenameSQL(tableName, r.New))
-			revertBuf.WriteString(r.New.ToRenameSQL(tableName, r.Old))
 		}
 	}
 
@@ -304,6 +303,9 @@ func diffDefines(arg *DiffArg, newModel, oldModel *models.Models) (alter, revert
 		//カラム追加/削除
 		adds, drops, _, _ := diffColumnByDefine(newTable, oldTable)
 		for _, c := range drops {
+			if c.Reference != "" {
+				alterBuf.WriteString(c.ToFKDropSQL(tableName))
+			}
 			alterBuf.WriteString(c.ToDropSQL(tableName))
 		}
 		for _, c := range adds {
@@ -378,15 +380,15 @@ func diffTableByName(new, old *models.Models) (addTables, dropTables []*models.T
 	return
 }
 
-func diffColumnByName(new, old *models.Table) (addColumns, dropColumns []*models.Column, remainNames []string) {
+func diffColumnByName(newTable, oldTable *models.Table) (addColumns, dropColumns []*models.Column, remainNames []string) {
 	// 旧テーブル定義にカラム定義がないもの
 	addColumns = make([]*models.Column, 0)
 	// 新テーブル定義にカラム定義がないもの
 	dropColumns = make([]*models.Column, 0)
 	remainNames = make([]string, 0)
 
-	for _, newColumn := range new.Columns {
-		oldColumn := old.GetColumn(newColumn.Name.LowerSnake())
+	for _, newColumn := range newTable.Columns {
+		oldColumn := oldTable.GetColumn(newColumn.Name.LowerSnake())
 		if oldColumn == nil {
 			addColumns = append(addColumns, newColumn)
 		} else {
@@ -394,8 +396,8 @@ func diffColumnByName(new, old *models.Table) (addColumns, dropColumns []*models
 		}
 	}
 
-	for _, oldColumn := range old.Columns {
-		newColumn := new.GetColumn(oldColumn.Name.LowerSnake())
+	for _, oldColumn := range oldTable.Columns {
+		newColumn := newTable.GetColumn(oldColumn.Name.LowerSnake())
 		if newColumn == nil {
 			dropColumns = append(dropColumns, oldColumn)
 		}
@@ -408,28 +410,8 @@ type renameOperation struct {
 	New *models.Column
 }
 
-func diffColumnByDefine(new, old *models.Table) (addColumns, dropColumns []*models.Column, remainNames []string, renameOperations []renameOperation) {
-	// 旧テーブル定義にカラム定義がないもの
-	missingNewColumns := make([]*models.Column, 0)
-	// 新テーブル定義にカラム定義がないもの
-	missingOldColumns := make([]*models.Column, 0)
-	remainNames = make([]string, 0)
-
-	for _, newColumn := range new.Columns {
-		oldColumn := old.GetColumn(newColumn.Name.LowerSnake())
-		if oldColumn == nil {
-			missingNewColumns = append(missingNewColumns, newColumn)
-		} else {
-			remainNames = append(remainNames, newColumn.Name.LowerSnake())
-		}
-	}
-
-	for _, oldColumn := range old.Columns {
-		newColumn := new.GetColumn(oldColumn.Name.LowerSnake())
-		if newColumn == nil {
-			missingOldColumns = append(missingOldColumns, oldColumn)
-		}
-	}
+func diffColumnByDefine(newTable, oldTable *models.Table) (addColumns, dropColumns []*models.Column, remainNames []string, renameOperations []renameOperation) {
+	missingNewColumns, missingOldColumns, remainNames := diffColumnByName(newTable, oldTable)
 
 	addColumns = make([]*models.Column, 0)
 	dropColumns = make([]*models.Column, 0)
