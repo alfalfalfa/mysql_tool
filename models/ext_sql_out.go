@@ -233,20 +233,30 @@ func (this Column) ToFKAddSQL(tableName string) string {
 	}
 	refTableName := tmp[0]
 	refColumnName := tmp[1]
-	res.WriteString(fmt.Sprintf("ALTER TABLE `%s` ADD CONSTRAINT `ref_%s_%s_%s_%s`", tableName, tableName, this.Name.LowerSnake(), refTableName, refColumnName))
+
+	res.WriteString(fmt.Sprintf("ALTER TABLE `%s` ADD CONSTRAINT `ref_%s`", tableName, generateConstraintSymbol(tableName, this.Name.LowerSnake(), refTableName, refColumnName)))
 	res.WriteString(fmt.Sprintf(" FOREIGN KEY (`%s`)", this.Name.LowerSnake()))
 	res.WriteString(fmt.Sprintf(" REFERENCES `%s` (`%s`)", refTableName, refColumnName))
 	//res.WriteString(" ON DELETE NO ACTION\n  ON UPDATE NO ACTION")
 	res.WriteString(";\n")
 	return res.String()
 }
-
+func generateConstraintSymbol(tableName, columnName, refTableName, refColumnName string) string{
+	symbol := fmt.Sprintf("%s_%s_%s_%s", tableName, columnName, refTableName, refColumnName)
+	if 60 < len(symbol){
+		symbol = fmt.Sprintf("%s_%s_%s", tableName, columnName, refTableName)
+	}
+	if 60 < len(symbol){
+		symbol = fmt.Sprintf("%s_%s", tableName, columnName)
+	}
+	return symbol
+}
 func (this Column) ToFKDropSQL(tableName string) string {
 	res := bytes.NewBuffer(nil)
 	tmp := strings.Split(this.Reference, ".")
 	refTableName := tmp[0]
 	refColumnName := tmp[1]
-	res.WriteString(fmt.Sprintf("ALTER TABLE `%s` DROP FOREIGN KEY `ref_%s_%s_%s_%s`", tableName, tableName, this.Name.LowerSnake(), refTableName, refColumnName))
+	res.WriteString(fmt.Sprintf("ALTER TABLE `%s` DROP FOREIGN KEY `ref_%s`", tableName, generateConstraintSymbol(tableName, this.Name.LowerSnake(), refTableName, refColumnName)))
 	res.WriteString(";\n")
 	return res.String()
 }
