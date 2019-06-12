@@ -89,7 +89,7 @@ func (this Table) ToExcelSheet(sheet *xlsx.Sheet) {
 	SetHeaderStyle(indexHeaderRow.AddCell()).SetValue("Index名")
 	SetHeaderStyle(indexHeaderRow.AddCell()).SetValue("対象カラム名")
 	SetHeaderStyle(indexHeaderRow.AddCell()).SetValue("UNIQUE KEY")
-	SetHeaderStyle(indexHeaderRow.AddCell()).SetValue("")
+	SetHeaderStyle(indexHeaderRow.AddCell()).SetValue("[FULLTEXT | SPATIAL]")
 	SetHeaderStyle(indexHeaderRow.AddCell()).SetValue("")
 	SetHeaderStyle(indexHeaderRow.AddCell()).SetValue("")
 	SetHeaderStyle(indexHeaderRow.AddCell()).SetValue("")
@@ -142,7 +142,7 @@ func (this Index) ToExcelRow(row *xlsx.Row) {
 	} else {
 		row.AddCell().SetValue("")
 	}
-	row.AddCell().SetValue("")
+	row.AddCell().SetValue(this.Type)
 	row.AddCell().SetValue("")
 	row.AddCell().SetValue("")
 	row.AddCell().SetValue("")

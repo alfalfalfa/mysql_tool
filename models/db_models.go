@@ -10,10 +10,10 @@ import (
 )
 
 type MysqlTable struct {
-	Name          string `gorm:"column:Name"`
-	Engine        string `gorm:"column:Engine"`
-	Collation     string `gorm:"column:Collation"`
-	Comment       string `gorm:"column:Comment"`
+	Name      string `gorm:"column:Name"`
+	Engine    string `gorm:"column:Engine"`
+	Collation string `gorm:"column:Collation"`
+	Comment   string `gorm:"column:Comment"`
 }
 
 func (this MysqlTable) GetName() string {
@@ -66,8 +66,8 @@ type MysqlIndex struct {
 	ColumnName  string        `gorm:"column:Column_name"`
 	Collation   string        `gorm:"column:Collation"`
 	Cardinality sql.NullInt64 `gorm:"column:Cardinality"`
-
-	//Comment       string `gorm:"column:Comment"`
+	Type        string        `gorm:"column:Index_type"`
+	Comment     string        `gorm:"column:Index_comment"`
 }
 
 func (this MysqlIndex) GetName() string {

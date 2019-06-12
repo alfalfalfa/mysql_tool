@@ -266,10 +266,16 @@ func (this Index) ToCreateSQL() string {
 	//  INDEX `user_id_idx` (`user_id` ASC))
 	//  INDEX `search_idx` (`user_Id` ASC, `received_at` ASC))
 	//  UNIQUE INDEX `store_trans_idx` (`store_transaction_id` ASC),
+	//  FULLTEXT KEY `idx` (`opening_line`),
+	//  SPATIAL KEY `loc` (`loc`),
+
 	res := bytes.NewBuffer(nil)
 	res.WriteString(" ")
 	if this.Unique {
 		res.WriteString(" UNIQUE")
+	} else if this.Type != "" {
+		res.WriteString(" ")
+		res.WriteString(this.Type)
 	}
 	res.WriteString(" INDEX")
 
@@ -283,6 +289,12 @@ func (this Index) ToCreateSQL() string {
 	}
 	res.WriteString(strings.Join(tmp, ", "))
 	res.WriteString(")")
+
+	if this.Comment != "" {
+		res.WriteString(" COMMENT '")
+		res.WriteString(this.Comment)
+		res.WriteString("'")
+	}
 	return res.String()
 }
 func (this Index) ToAddSQL(tableName string) string {

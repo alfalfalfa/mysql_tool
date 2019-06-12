@@ -124,6 +124,10 @@ func NewIndexFromMysql(db *gorm.DB, indexInfos []MysqlIndex) *Index {
 	for _, indexInfo := range indexInfos {
 		in.Name = indexInfo.GetName()
 		in.Unique = !indexInfo.NonUnique
+		if indexInfo.Type != "BTREE" {
+			in.Type = indexInfo.Type
+		}
+		in.Comment = indexInfo.Comment
 		in.ColumnNames[indexInfo.SeqInIndex-1] = strings.ToLower(indexInfo.ColumnName)
 	}
 
