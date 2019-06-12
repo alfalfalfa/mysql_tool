@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 )
 
-func loadTablesFromJson(ignoreTables[]string, path string) []*Table {
+func loadTablesFromJson(ignoreTables []string, path string) []*Table {
 	tables := make([]*Table, 0)
 	m := &Models{}
 	b, err := ioutil.ReadFile(path)

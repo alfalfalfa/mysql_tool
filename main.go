@@ -5,8 +5,8 @@ import (
 
 	"os"
 
-	"github.com/docopt/docopt-go"
 	"github.com/app-studio/mysql_tool/cmd"
+	"github.com/docopt/docopt-go"
 )
 
 const usageRoot = `mysql_tool

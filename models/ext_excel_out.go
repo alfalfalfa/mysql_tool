@@ -60,7 +60,7 @@ func (this Table) ToExcelSheet(sheet *xlsx.Sheet) {
 	tableRow.AddCell().SetValue(this.Comment)
 	//TODO metadata
 	tableRow.AddCell().SetValue("")
-	for _, v := range this.Descriptions{
+	for _, v := range this.Descriptions {
 		tableRow.AddCell().SetValue(v)
 	}
 
@@ -127,7 +127,7 @@ func (this Column) ToExcelRow(row *xlsx.Row) {
 	row.AddCell().SetValue(this.Comment)
 	//TODO metadata
 	row.AddCell().SetValue("")
-	for _, v := range this.Descriptions{
+	for _, v := range this.Descriptions {
 		row.AddCell().SetValue(v)
 	}
 }
@@ -148,7 +148,7 @@ func (this Index) ToExcelRow(row *xlsx.Row) {
 	row.AddCell().SetValue("")
 	row.AddCell().SetValue(this.Comment)
 	row.AddCell().SetValue("")
-	for _, v := range this.Descriptions{
+	for _, v := range this.Descriptions {
 		row.AddCell().SetValue(v)
 	}
 }

@@ -3,9 +3,9 @@ package models
 import (
 	"bytes"
 	"fmt"
+	"github.com/app-studio/mysql_tool/util/null"
 	"log"
 	"strings"
-	"github.com/app-studio/mysql_tool/util/null"
 )
 
 const SQL_PREFIX = `
@@ -147,7 +147,7 @@ func (this Column) ToCreateSQL() string {
 
 func (this Column) ToAddSQLWithDummyDefault(tableName string) string {
 	// 時間型であれば、仮のデフォルト設定してAlter、その後デフォルト外す
-	if this.IsTime() && this.NotNull && !this.Default.Valid{
+	if this.IsTime() && this.NotNull && !this.Default.Valid {
 		res := bytes.NewBuffer(nil)
 
 		this.Default = null.StringFrom("CURRENT_TIMESTAMP")
@@ -157,7 +157,7 @@ func (this Column) ToAddSQLWithDummyDefault(tableName string) string {
 		res.WriteString(this.ToModifySQL(tableName, ""))
 
 		return res.String()
-	}else{
+	} else {
 		return this.ToAddSQL(tableName)
 	}
 }
@@ -241,12 +241,12 @@ func (this Column) ToFKAddSQL(tableName string) string {
 	res.WriteString(";\n")
 	return res.String()
 }
-func generateConstraintSymbol(tableName, columnName, refTableName, refColumnName string) string{
+func generateConstraintSymbol(tableName, columnName, refTableName, refColumnName string) string {
 	symbol := fmt.Sprintf("%s_%s_%s_%s", tableName, columnName, refTableName, refColumnName)
-	if 60 < len(symbol){
+	if 60 < len(symbol) {
 		symbol = fmt.Sprintf("%s_%s_%s", tableName, columnName, refTableName)
 	}
-	if 60 < len(symbol){
+	if 60 < len(symbol) {
 		symbol = fmt.Sprintf("%s_%s", tableName, columnName)
 	}
 	return symbol

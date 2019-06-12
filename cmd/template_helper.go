@@ -5,9 +5,9 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/app-studio/mysql_tool/util"
 	"github.com/flosch/pongo2"
 	"github.com/jinzhu/inflection"
-	"github.com/app-studio/mysql_tool/util"
 )
 
 // add returns the sum of a and b.

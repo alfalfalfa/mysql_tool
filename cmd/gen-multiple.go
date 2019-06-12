@@ -10,10 +10,10 @@ import (
 	"path/filepath"
 	"regexp"
 
+	"github.com/app-studio/mysql_tool/models"
+	"github.com/app-studio/mysql_tool/util/copy"
 	"github.com/docopt/docopt-go"
 	"github.com/flosch/pongo2"
-	"github.com/app-studio/mysql_tool/util/copy"
-	"github.com/app-studio/mysql_tool/models"
 )
 
 const usageGenMultiple = `mysql_tool gen-multiple

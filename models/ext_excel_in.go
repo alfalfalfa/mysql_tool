@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/app-studio/mysql_tool/util"
-	"github.com/tealeg/xlsx"
 	"github.com/app-studio/mysql_tool/util/null"
+	"github.com/tealeg/xlsx"
 )
 
 func loadTablesFromExcel(ignoreTables []string, path string) []*Table {

@@ -14,9 +14,9 @@ import (
 
 	"time"
 
+	"github.com/app-studio/mysql_tool/util/copy"
 	"github.com/docopt/docopt-go"
 	"github.com/jinzhu/gorm"
-	"github.com/app-studio/mysql_tool/util/copy"
 	"golang.org/x/crypto/ssh/terminal"
 	"syscall"
 )

@@ -466,7 +466,7 @@ func normalizeDefault(c *Column) string {
 	d = strings.Trim(d, "'")
 
 	if !c.IsNumeric() &&
-		!(c.IsTime() && (strings.ToUpper(d) == "CURRENT_TIMESTAMP" || strings.ToUpper(d) == "NOW()") ) {
+		!(c.IsTime() && (strings.ToUpper(d) == "CURRENT_TIMESTAMP" || strings.ToUpper(d) == "NOW()")) {
 		//TODO escape inner quote
 		d = "'" + d + "'"
 		return d
@@ -478,7 +478,7 @@ type Index struct {
 	Name         string
 	ColumnNames  []string
 	Unique       bool     `json:",omitempty" yaml:",omitempty"`
-	Type         string     `json:",omitempty" yaml:",omitempty"`
+	Type         string   `json:",omitempty" yaml:",omitempty"`
 	Comment      string   `json:",omitempty" yaml:",omitempty"`
 	Descriptions []string `json:",omitempty" yaml:",omitempty"`
 

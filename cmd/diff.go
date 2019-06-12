@@ -230,7 +230,7 @@ func diffDefines(arg *DiffArg, newModel, oldModel *models.Models) (alter, revert
 		//カラム追加/削除
 		adds, drops, _, renames := diffColumnByDefine(newTable, oldTable)
 
-		for _, r := range renames{
+		for _, r := range renames {
 			alterBuf.WriteString(r.Old.ToRenameSQL(tableName, r.New))
 			revertBuf.WriteString(r.New.ToRenameSQL(tableName, r.Old))
 		}
@@ -419,26 +419,26 @@ func diffColumnByDefine(newTable, oldTable *models.Table) (addColumns, dropColum
 	renameOperations = make([]renameOperation, 0)
 	for _, addColumn := range missingNewColumns {
 		similarColumn := getSimilarColumn(missingOldColumns, addColumn, renameOperations)
-		if similarColumn != nil{
-			renameOperations = append(renameOperations, renameOperation {
+		if similarColumn != nil {
+			renameOperations = append(renameOperations, renameOperation{
 				Old: similarColumn,
 				New: addColumn,
 			})
-		}else{
+		} else {
 			addColumns = append(addColumns, addColumn)
 		}
 	}
 	for _, dropColumn := range missingOldColumns {
-		if !containsOld(renameOperations, dropColumn){
+		if !containsOld(renameOperations, dropColumn) {
 			dropColumns = append(dropColumns, dropColumn)
 		}
 	}
 	return
 }
 
-func getSimilarColumn(columns []*models.Column, column *models.Column, renameOperations []renameOperation) *models.Column{
+func getSimilarColumn(columns []*models.Column, column *models.Column, renameOperations []renameOperation) *models.Column {
 	for _, c := range columns {
-		if containsOld(renameOperations, column){
+		if containsOld(renameOperations, column) {
 			continue
 		}
 		changeType := c.IsChange(column)
@@ -452,9 +452,9 @@ func getSimilarColumn(columns []*models.Column, column *models.Column, renameOpe
 
 	return nil
 }
-func containsOld(renameOperations []renameOperation, column *models.Column) bool{
+func containsOld(renameOperations []renameOperation, column *models.Column) bool {
 	for _, r := range renameOperations {
-		if r.Old == column{
+		if r.Old == column {
 			return true
 		}
 	}
