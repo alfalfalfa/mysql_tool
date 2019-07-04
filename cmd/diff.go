@@ -251,25 +251,64 @@ func diffDefines(arg *DiffArg, newModel, oldModel *models.Models) (alter, revert
 		newTable := newModel.GetTable(tableName)
 		oldTable := oldModel.GetTable(tableName)
 		adds, drops, modifyNames := diffIndexBySQL(newTable, oldTable)
+
+		allAddIndexes := make([]*models.Index, 0)
+		allDropIndexes := make([]*models.Index, 0)
+		// modify:re-create exists indexes
 		for _, indexName := range modifyNames {
 			newIndex := newTable.GetIndex(indexName)
 			oldIndex := oldTable.GetIndex(indexName)
-			alterBuf.WriteString(newIndex.ToDropSQL(tableName))
-			alterBuf.WriteString(newIndex.ToAddSQL(tableName))
-			revertBuf.WriteString(oldIndex.ToDropSQL(tableName))
-			revertBuf.WriteString(oldIndex.ToAddSQL(tableName))
+
+			allDropIndexes = append(allDropIndexes, oldIndex)
+			allAddIndexes = append(allAddIndexes, newIndex)
 		}
-		for _, in := range drops {
+
+		allDropIndexes = append(allDropIndexes, drops...)
+		allAddIndexes = append(allAddIndexes, adds...)
+
+		dropFkColumns := make(map[*models.Column]bool)
+		addFkColumns := make(map[*models.Column]bool)
+
+		// index対象の先頭カラムがFKを持つ場合、暗黙indexが削除されている可能性があるためFKを一旦削除する
+		for _, in := range allDropIndexes {
+			if in.Columns[0].Reference == "" {
+				continue
+			}
+			dropFkColumns[in.Columns[0]] = true
+		}
+		for _, in := range allAddIndexes {
+			if in.Columns[0].Reference == "" {
+				continue
+			}
+			addFkColumns[in.Columns[0]] = true
+		}
+
+		// alter SQL出力
+		for c, _ := range dropFkColumns {
+			alterBuf.WriteString(c.ToFKDropSQL(tableName))
+		}
+		for _, in := range allDropIndexes {
 			alterBuf.WriteString(in.ToDropSQL(tableName))
 		}
-		for _, in := range adds {
+		for _, in := range allAddIndexes {
+			alterBuf.WriteString(in.ToAddSQL(tableName))
+		}
+		for c, _ := range dropFkColumns {
+			alterBuf.WriteString(c.ToFKAddSQL(tableName))
+		}
+
+		// revert SQL出力
+		for c, _ := range addFkColumns {
+			revertBuf.WriteString(c.ToFKDropSQL(tableName))
+		}
+		for _, in := range allAddIndexes {
 			revertBuf.WriteString(in.ToDropSQL(tableName))
 		}
-		for _, in := range drops {
+		for _, in := range allDropIndexes {
 			revertBuf.WriteString(in.ToAddSQL(tableName))
 		}
-		for _, in := range adds {
-			alterBuf.WriteString(in.ToAddSQL(tableName))
+		for c, _ := range addFkColumns {
+			revertBuf.WriteString(c.ToFKAddSQL(tableName))
 		}
 	}
 
