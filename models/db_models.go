@@ -25,6 +25,11 @@ func (this MysqlTable) GetCharset() string {
 	return tmp[0]
 }
 
+func (this MysqlTable) IsBinaryCollation() bool {
+	tmp := strings.Split(this.Collation, "_")
+	return tmp[len(tmp)-1] == "bin"
+}
+
 func LoadMysqlTables(db *gorm.DB) []MysqlTable {
 	var fields []MysqlTable
 	db.Raw("SHOW TABLE STATUS").Find(&fields)
@@ -39,7 +44,7 @@ type MysqlColumn struct {
 	Key        string      `gorm:"column:Key"`
 	Comment    string      `gorm:"column:Comment"`
 	Default    null.String `gorm:"column:Default"`
-	Collation  string      `gorm:"column:Collation"`
+	Collation  null.String `gorm:"column:Collation"`
 	Extra      string      `gorm:"column:Extra"`
 	Privileges string      `gorm:"column:Privileges"`
 }
@@ -50,6 +55,16 @@ func (this MysqlColumn) isNull() bool {
 
 func (this MysqlColumn) GetName() string {
 	return strings.ToLower(this.Field)
+}
+
+func (this MysqlColumn) GetCharset() string {
+	tmp := strings.Split(this.Collation.ValueOrZero(), "_")
+	return tmp[0]
+}
+
+func (this MysqlColumn) IsBinaryCollation() bool {
+	tmp := strings.Split(this.Collation.ValueOrZero(), "_")
+	return tmp[len(tmp)-1] == "bin"
 }
 
 func LoadMysqlColumns(db *gorm.DB, table string) []MysqlColumn {

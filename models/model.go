@@ -36,16 +36,17 @@ func (this Models) GetTable(name string) *Table {
 
 type Table struct {
 	//LogicalName    string
-	Name            util.CaseString
-	Engine          string
-	DefaultCharset  string
-	DbIndex         int      `json:",omitempty" yaml:",omitempty"`
-	ConnectionIndex int      `json:",omitempty" yaml:",omitempty"`
-	Comment         string   `json:",omitempty" yaml:",omitempty"`
-	MetaDataJson    string   `json:",omitempty" yaml:",omitempty"`
-	Descriptions    []string `json:",omitempty" yaml:",omitempty"`
-	Columns         []*Column
-	Indexes         []*Index
+	Name             util.CaseString
+	Engine           string
+	DefaultCharset   string
+	DefaultCollation string
+	DbIndex          int      `json:",omitempty" yaml:",omitempty"`
+	ConnectionIndex  int      `json:",omitempty" yaml:",omitempty"`
+	Comment          string   `json:",omitempty" yaml:",omitempty"`
+	MetaDataJson     string   `json:",omitempty" yaml:",omitempty"`
+	Descriptions     []string `json:",omitempty" yaml:",omitempty"`
+	Columns          []*Column
+	Indexes          []*Index
 
 	PrimaryKeys       []*Column    `json:"-" yaml:"-"`
 	References        []*Reference `json:"-" yaml:"-"`
@@ -134,6 +135,11 @@ func (this *Table) RemoveIndex(removeIndexes ...*Index) {
 
 func (this Table) IsChange(other *Table) bool {
 	return this.Engine != other.Engine || this.Comment != other.Comment || this.DefaultCharset != other.DefaultCharset
+}
+
+func (this Table) IsBinaryCollation() bool {
+	tmp := strings.Split(this.DefaultCollation, "_")
+	return tmp[len(tmp)-1] == "bin"
 }
 
 type Column struct {
@@ -479,7 +485,7 @@ type Index struct {
 	ColumnNames  []string
 	Unique       bool     `json:",omitempty" yaml:",omitempty"`
 	Type         string   `json:",omitempty" yaml:",omitempty"`
-	Options         string   `json:",omitempty" yaml:",omitempty"`
+	Options      string   `json:",omitempty" yaml:",omitempty"`
 	Comment      string   `json:",omitempty" yaml:",omitempty"`
 	Descriptions []string `json:",omitempty" yaml:",omitempty"`
 

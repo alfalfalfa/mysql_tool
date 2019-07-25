@@ -56,6 +56,7 @@ func NewTableFromMysql(db *gorm.DB, tableInfo MysqlTable) *Table {
 	//t.LogicalName = tableInfo.Comment
 	t.Engine = tableInfo.Engine
 	t.DefaultCharset = tableInfo.GetCharset()
+	t.DefaultCollation = tableInfo.Collation
 
 	t.Comment = tableInfo.Comment
 	//t.MetaDataJson = strings.TrimSpace(row.Cells[8].Value)
@@ -63,7 +64,7 @@ func NewTableFromMysql(db *gorm.DB, tableInfo MysqlTable) *Table {
 	t.Columns = make([]*Column, 0)
 	var pkIndex int
 	for _, columnInfo := range LoadMysqlColumns(db, tableInfo.GetName()) {
-		c := NewColumnFromMysql(db, columnInfo)
+		c := NewColumnFromMysql(db, t, columnInfo)
 
 		if columnInfo.Key == "PRI" {
 			pkIndex++
@@ -101,12 +102,26 @@ func NewTableFromMysql(db *gorm.DB, tableInfo MysqlTable) *Table {
 	return t
 }
 
-func NewColumnFromMysql(db *gorm.DB, columnInfo MysqlColumn) *Column {
+func NewColumnFromMysql(db *gorm.DB, t *Table, columnInfo MysqlColumn) *Column {
 	c := &Column{}
 
 	c.Name = util.NewCaseString(columnInfo.GetName())
 	//c.LogicalName = strings.TrimSpace(row.Cells[2].Value)
 	c.Type = columnInfo.Type
+
+	// merge collation to type
+	if columnInfo.Collation.Valid {
+		if columnInfo.GetCharset() != t.DefaultCharset {
+			c.Type += " CHARACTER SET " + columnInfo.GetCharset() + " COLLATE " + columnInfo.Collation.ValueOrZero()
+		} else if columnInfo.Collation.ValueOrZero() != t.DefaultCollation {
+			if columnInfo.IsBinaryCollation() && !t.IsBinaryCollation() {
+				c.Type += " binary"
+			} else {
+				c.Type += " COLLATE " + columnInfo.Collation.ValueOrZero()
+			}
+		}
+	}
+
 	c.NotNull = !columnInfo.isNull()
 
 	c.Comment = columnInfo.Comment
