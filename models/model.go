@@ -479,6 +479,7 @@ type Index struct {
 	ColumnNames  []string
 	Unique       bool     `json:",omitempty" yaml:",omitempty"`
 	Type         string   `json:",omitempty" yaml:",omitempty"`
+	Options         string   `json:",omitempty" yaml:",omitempty"`
 	Comment      string   `json:",omitempty" yaml:",omitempty"`
 	Descriptions []string `json:",omitempty" yaml:",omitempty"`
 

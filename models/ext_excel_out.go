@@ -90,7 +90,7 @@ func (this Table) ToExcelSheet(sheet *xlsx.Sheet) {
 	SetHeaderStyle(indexHeaderRow.AddCell()).SetValue("対象カラム名")
 	SetHeaderStyle(indexHeaderRow.AddCell()).SetValue("UNIQUE KEY")
 	SetHeaderStyle(indexHeaderRow.AddCell()).SetValue("[FULLTEXT | SPATIAL]")
-	SetHeaderStyle(indexHeaderRow.AddCell()).SetValue("")
+	SetHeaderStyle(indexHeaderRow.AddCell()).SetValue("OPTIONS")
 	SetHeaderStyle(indexHeaderRow.AddCell()).SetValue("")
 	SetHeaderStyle(indexHeaderRow.AddCell()).SetValue("")
 	SetHeaderStyle(indexHeaderRow.AddCell()).SetValue("COMMENT")
@@ -143,7 +143,7 @@ func (this Index) ToExcelRow(row *xlsx.Row) {
 		row.AddCell().SetValue("")
 	}
 	row.AddCell().SetValue(this.Type)
-	row.AddCell().SetValue("")
+	row.AddCell().SetValue(this.Options)
 	row.AddCell().SetValue("")
 	row.AddCell().SetValue("")
 	row.AddCell().SetValue(this.Comment)

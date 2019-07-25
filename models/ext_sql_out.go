@@ -290,6 +290,11 @@ func (this Index) ToCreateSQL() string {
 	res.WriteString(strings.Join(tmp, ", "))
 	res.WriteString(")")
 
+	if this.Options != "" {
+		res.WriteString(" ")
+		res.WriteString(this.Options)
+	}
+
 	if this.Comment != "" {
 		res.WriteString(" COMMENT '")
 		res.WriteString(this.Comment)
