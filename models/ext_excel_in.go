@@ -128,6 +128,7 @@ func NewIndexFromExcelRow(row *xlsx.Row) *Index {
 		ix.ColumnNames[i] = strings.TrimSpace(v)
 	}
 	ix.Unique = getCellValue(row, 3) != ""
+	ix.Type = getCellValue(row, 4)
 	ix.Comment = getCellValue(row, 8)
 	ix.Descriptions = getBelowCellValues(row, 10)
 	return ix
