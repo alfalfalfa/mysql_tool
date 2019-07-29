@@ -39,7 +39,7 @@ type Table struct {
 	Name             util.CaseString
 	Engine           string
 	DefaultCharset   string
-	DefaultCollation string
+	DefaultCollation string   `json:",omitempty" yaml:",omitempty"`
 	DbIndex          int      `json:",omitempty" yaml:",omitempty"`
 	ConnectionIndex  int      `json:",omitempty" yaml:",omitempty"`
 	Comment          string   `json:",omitempty" yaml:",omitempty"`
