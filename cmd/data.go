@@ -17,7 +17,7 @@ import (
 	jsonutil "github.com/app-studio/mysql_tool/util/json"
 	"github.com/docopt/docopt-go"
 	"github.com/jinzhu/gorm"
-	"github.com/tealeg/xlsx"
+	"github.com/app-studio/xlsx"
 )
 
 const usageData = `mysql_tool data

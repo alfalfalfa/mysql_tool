@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"strings"
 
-	"github.com/tealeg/xlsx"
+	"github.com/app-studio/xlsx"
 )
 
 var headerStyle *xlsx.Style
