@@ -15,9 +15,9 @@ import (
 	"github.com/app-studio/mysql_tool/models"
 	"github.com/app-studio/mysql_tool/util/copy"
 	jsonutil "github.com/app-studio/mysql_tool/util/json"
+	"github.com/app-studio/xlsx"
 	"github.com/docopt/docopt-go"
 	"github.com/jinzhu/gorm"
-	"github.com/app-studio/xlsx"
 )
 
 const usageData = `mysql_tool data
@@ -28,7 +28,7 @@ Usage:
     mysql_tool data [-f FORMAT] [-o OUTPUT] [--tables TABLES...] [--ignore-tables IGNORE_TABLES...] [--defines INPUTS...] [--skip-truncate] INPUTS...
 
 Arg:
-    入力ファイルパス（json,xlsx） | mysql fqdn
+    入力ファイルパス（json,xlsx） | mysql dsn(https://github.com/go-sql-driver/mysql#dsn-data-source-name)
 
 Options:
     -h --help                             Show this screen.

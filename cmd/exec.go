@@ -27,10 +27,10 @@ const usageExec = `mysql_tool exec
 
 Usage:
     mysql_tool exec -h | --help
-    mysql_tool exec [-q] [-t TIMEOUT] [-e SQL] FQDN [SQLFILE]
+    mysql_tool exec [-q] [-t TIMEOUT] [-e SQL] DSN [SQLFILE]
 
 Arg:
-    FQDN     mysql接続文字列
+    DSN      mysql接続文字列(https://github.com/go-sql-driver/mysql#dsn-data-source-name)
     SQLFILE  実行するSQLファイル
 
 Options:
@@ -41,7 +41,7 @@ Options:
 `
 
 type ExecArg struct {
-	FQDN    string `arg:"FQDN"`
+	DSN     string `arg:"DSN"`
 	SQLFILE string `arg:"SQLFILE"`
 	SQL     string `arg:"--execute"`
 	Timeout int    `arg:"--timeout"`
@@ -73,7 +73,7 @@ func RunExec() {
 	second := 0
 	for {
 		second++
-		db, err = gorm.Open("mysql", arg.FQDN)
+		db, err = gorm.Open("mysql", arg.DSN)
 
 		if err != nil {
 			if !arg.Quiet {

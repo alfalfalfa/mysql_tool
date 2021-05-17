@@ -27,7 +27,7 @@ Usage:
     mysql_tool diff [--old OLD] [-f FORMAT] [-o OUTPUT] [--foreign-key] [--ignore-tables IGNORE_TABLES...] [--json-comment] INPUTS...
 
 Arg:
-    入力ファイルパス（json, yaml, xlsx, dir） | mysql fqdn
+    入力ファイルパス（json, yaml, xlsx, dir） | mysql dsn(https://github.com/go-sql-driver/mysql#dsn-data-source-name)
 
 Options:
     -h --help                     Show this screen.

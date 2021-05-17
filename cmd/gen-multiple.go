@@ -26,7 +26,7 @@ Usage:
 Arg:
 	<TEMPLATE_PATH>        (必須)テンプレートファイルパス
 	<OUTPUT_PATH_PETTERN>  (必須)出力ファイルパスパターン
-    INPUTS...				入力ファイルパス（json, yaml, xlsx, dir） | mysql fqdn
+    INPUTS...				入力ファイルパス（json, yaml, xlsx, dir） | mysql dsn(https://github.com/go-sql-driver/mysql#dsn-data-source-name)
 
 Options:
     -h --help                           Show this screen.

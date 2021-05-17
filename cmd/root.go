@@ -27,7 +27,7 @@ Options:
     -h --help    Show this screen.
 `
 
-func RunRoot(){
+func RunRoot() {
 	if len(os.Args) < 2 {
 		fmt.Print(usageRoot)
 		return
