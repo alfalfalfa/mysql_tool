@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 
-	"github.com/app-studio/mysql_tool/util/errors"
+	"github.com/alfalfalfa/mysql_tool/util/errors"
 	"log"
 )
 

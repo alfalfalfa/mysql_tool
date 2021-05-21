@@ -1,9 +1,9 @@
-module github.com/app-studio/mysql_tool
+module github.com/alfalfalfa/mysql_tool
 
 go 1.13
 
 require (
-	github.com/app-studio/xlsx v1.0.3
+	github.com/alfalfalfa/xlsx v1.0.3
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
 	github.com/flosch/pongo2 v0.0.0-20190707114632-bbf5a6c351f4
 	github.com/go-sql-driver/mysql v1.5.0

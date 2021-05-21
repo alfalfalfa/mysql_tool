@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/app-studio/mysql_tool/util/errors"
+	"github.com/alfalfalfa/mysql_tool/util/errors"
 	"gopkg.in/yaml.v2"
 	"log"
 )

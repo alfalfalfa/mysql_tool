@@ -3,7 +3,7 @@ package models
 import (
 	"bytes"
 	"fmt"
-	"github.com/app-studio/mysql_tool/util/null"
+	"github.com/alfalfalfa/mysql_tool/util/null"
 	"log"
 	"strings"
 )

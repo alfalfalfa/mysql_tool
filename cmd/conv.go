@@ -7,8 +7,8 @@ import (
 
 	"path/filepath"
 
-	"github.com/app-studio/mysql_tool/models"
-	"github.com/app-studio/mysql_tool/util/copy"
+	"github.com/alfalfalfa/mysql_tool/models"
+	"github.com/alfalfalfa/mysql_tool/util/copy"
 	"github.com/docopt/docopt-go"
 )
 

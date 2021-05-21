@@ -2,7 +2,7 @@ package models
 
 import (
 	"fmt"
-	"github.com/app-studio/mysql_tool/util/json"
+	"github.com/alfalfalfa/mysql_tool/util/json"
 )
 
 func (m *Models) MarshalModel(format string, fk bool, jsonComment bool) []byte {

@@ -12,10 +12,10 @@ import (
 
 	"bytes"
 
-	"github.com/app-studio/mysql_tool/models"
-	"github.com/app-studio/mysql_tool/util/copy"
-	jsonutil "github.com/app-studio/mysql_tool/util/json"
-	"github.com/app-studio/xlsx"
+	"github.com/alfalfalfa/mysql_tool/models"
+	"github.com/alfalfalfa/mysql_tool/util/copy"
+	jsonutil "github.com/alfalfalfa/mysql_tool/util/json"
+	"github.com/alfalfalfa/xlsx"
 	"github.com/docopt/docopt-go"
 	"github.com/jinzhu/gorm"
 )

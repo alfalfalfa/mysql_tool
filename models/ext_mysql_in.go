@@ -3,7 +3,7 @@ package models
 import (
 	"strings"
 
-	"github.com/app-studio/mysql_tool/util"
+	"github.com/alfalfalfa/mysql_tool/util"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 )

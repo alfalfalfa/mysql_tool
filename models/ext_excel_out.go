@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"strings"
 
-	"github.com/app-studio/xlsx"
+	"github.com/alfalfalfa/xlsx"
 )
 
 var headerStyle *xlsx.Style

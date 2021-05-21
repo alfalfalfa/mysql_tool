@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/app-studio/mysql_tool/util/errors"
+	"github.com/alfalfalfa/mysql_tool/util/errors"
 )
 
 //TODO interface{} == ポインタのチェック, 変換

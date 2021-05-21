@@ -4,9 +4,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/app-studio/mysql_tool/util"
-	"github.com/app-studio/mysql_tool/util/null"
-	"github.com/app-studio/xlsx"
+	"github.com/alfalfalfa/mysql_tool/util"
+	"github.com/alfalfalfa/mysql_tool/util/null"
+	"github.com/alfalfalfa/xlsx"
 )
 
 func loadTablesFromExcel(ignoreTables []string, path string) []*Table {

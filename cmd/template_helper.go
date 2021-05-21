@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/app-studio/mysql_tool/util"
+	"github.com/alfalfalfa/mysql_tool/util"
 	"github.com/flosch/pongo2"
 	"github.com/jinzhu/inflection"
 )

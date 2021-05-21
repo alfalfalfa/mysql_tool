@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/app-studio/mysql_tool/cmd"
+	"github.com/alfalfalfa/mysql_tool/cmd"
 )
 
 func main() {

@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/app-studio/mysql_tool/util/null"
+	"github.com/alfalfalfa/mysql_tool/util/null"
 	"strings"
 
 	"database/sql"
