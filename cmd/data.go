@@ -5,9 +5,6 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"io/ioutil"
-	//"github.com/volatiletech/sqlboiler/v4/drivers"
-	//"github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql/driver"
-	//"github.com/volatiletech/sqlboiler/v4/types"
 	"os"
 	"reflect"
 
@@ -22,7 +19,6 @@ import (
 	jsonutil "github.com/alfalfalfa/mysql_tool/util/json"
 	"github.com/alfalfalfa/xlsx"
 	"github.com/docopt/docopt-go"
-	//null "github.com/volatiletech/null/v8"
 )
 
 const usageData = `mysql_tool data
@@ -283,49 +279,10 @@ func NewDataFromJson(arg *DataArg) *Data {
 	return res
 }
 
-//func getDBInfo(dsn string) (*drivers.DBInfo, error) {
-//	mysqlConfig, err := mysql.ParseDSN(dsn)
-//	if err != nil {
-//		return nil, err
-//	}
-//	//fmt.Fprintf(os.Stderr, "%+v\n", mysqlConfig)
-//
-//	var driverConfig drivers.Config = make(map[string]interface{})
-//	driverConfig[drivers.ConfigUser] = mysqlConfig.User
-//	driverConfig[drivers.ConfigPass] = mysqlConfig.Passwd
-//	driverConfig[drivers.ConfigDBName] = mysqlConfig.DBName
-//	addr := strings.Split(mysqlConfig.Addr, ":")
-//	driverConfig[drivers.ConfigHost] = addr[0]
-//	if 1 < len(addr) {
-//		i, err := strconv.Atoi(addr[1])
-//		if err != nil {
-//			driverConfig[drivers.ConfigPort] = 0
-//		} else {
-//			driverConfig[drivers.ConfigPort] = i
-//		}
-//	}
-//	driverConfig[drivers.ConfigSSLMode] = mysqlConfig.TLSConfig
-//
-//	dbinfo, err := driver.Assemble(driverConfig)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	return dbinfo, nil
-//}
-
 func NewDataFromMysql(arg *DataArg) *Data {
 	dsn := arg.Inputs[0]
-	//dbinfo, err := getDBInfo(dsn)
-	//checkError(err)
 	db, err := gorm.Open(mysql.Open(dsn))
 	checkError(err)
-	//for _, t := range dbinfo.Tables {
-	//	fmt.Fprintf(os.Stderr, "%s\n", t.Name)
-	//	for _, c := range t.Columns {
-	//		fmt.Fprintf(os.Stderr, "\t%s %s %s\n", c.Name, c.Type, c.DBType)
-	//	}
-	//}
 	res := &Data{
 		Tables: make([]*TableData, 0),
 	}
@@ -507,150 +464,3 @@ func ToString(v interface{}) string {
 func dereferenceIfPtr(value interface{}) interface{} {
 	return reflect.Indirect(reflect.ValueOf(value)).Interface()
 }
-
-//func getEmptyValueByType(c drivers.Column, tinyIntAsInt bool) interface{} {
-//	unsigned := strings.Contains(c.FullDBType, "unsigned")
-//	if c.Nullable {
-//		switch c.DBType {
-//		case "tinyint":
-//			// map tinyint(1) to bool if TinyintAsBool is true
-//			if !tinyIntAsInt && c.FullDBType == "tinyint(1)" {
-//				var v null.Bool
-//				return v
-//			} else if unsigned {
-//				var v null.Uint8
-//				return v
-//			} else {
-//				var v null.Int8
-//				return v
-//			}
-//		case "smallint":
-//			if unsigned {
-//				var v null.Uint16
-//				return v
-//			} else {
-//				var v null.Int16
-//				return v
-//			}
-//		case "mediumint":
-//			if unsigned {
-//				var v null.Uint32
-//				return v
-//			} else {
-//				var v null.Int32
-//				return v
-//			}
-//		case "int", "integer":
-//			if unsigned {
-//				var v null.Uint
-//				return v
-//			} else {
-//				var v null.Int
-//				return v
-//			}
-//		case "bigint":
-//			if unsigned {
-//				var v null.Uint64
-//				return v
-//			} else {
-//				var v null.Int64
-//				return v
-//			}
-//		case "float":
-//			var v null.Float32
-//			return v
-//		case "double", "double precision", "real":
-//			var v null.Float64
-//			return v
-//		case "boolean", "bool":
-//			var v null.Bool
-//			return v
-//		case "date", "datetime", "timestamp":
-//			var v null.Time
-//			return v
-//		case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
-//			var v null.Bytes
-//			return v
-//		case "numeric", "decimal", "dec", "fixed":
-//			var v types.NullDecimal
-//			return v
-//		case "json":
-//			var v null.JSON
-//			return v
-//		default:
-//			var v null.String
-//			return v
-//		}
-//	} else {
-//		switch c.DBType {
-//		case "tinyint":
-//			// map tinyint(1) to bool if TinyintAsBool is true
-//			if !tinyIntAsInt && c.FullDBType == "tinyint(1)" {
-//				var v bool
-//				return v
-//			} else if unsigned {
-//				var v uint8
-//				return v
-//			} else {
-//				var v int8
-//				return v
-//			}
-//		case "smallint":
-//			if unsigned {
-//				var v uint16
-//				return v
-//			} else {
-//				var v int16
-//				return v
-//			}
-//		case "mediumint":
-//			if unsigned {
-//				var v uint32
-//				return v
-//			} else {
-//				var v int32
-//				return v
-//			}
-//		case "int", "integer":
-//			if unsigned {
-//				var v uint
-//				return v
-//			} else {
-//				var v int
-//				return v
-//			}
-//		case "bigint":
-//			if unsigned {
-//				var v uint64
-//				return v
-//			} else {
-//				var v int64
-//				return v
-//			}
-//		case "float":
-//			var v float32
-//			return v
-//		case "double", "double precision", "real":
-//			var v float64
-//			return v
-//		case "boolean", "bool":
-//			var v bool
-//			return v
-//		case "date", "datetime", "timestamp":
-//			var v time.Time
-//			return v
-//		case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
-//			var v []byte
-//			return v
-//		case "numeric", "decimal", "dec", "fixed":
-//			var v types.Decimal
-//			return v
-//		case "json":
-//			var v types.JSON
-//			return v
-//		default:
-//			var v string
-//			return v
-//		}
-//	}
-//}
