@@ -4,14 +4,14 @@ import (
 	"strings"
 
 	"github.com/alfalfalfa/mysql_tool/util"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/jinzhu/gorm"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 func NewModelFromMysql(ignoreTables []string, fqdn string) *Models {
 	res := &Models{}
 	res.Tables = make([]*Table, 0)
-	db, err := gorm.Open("mysql", fqdn)
+	db, err := gorm.Open(mysql.Open(fqdn))
 	checkError(err)
 
 	for _, tableInfo := range LoadMysqlTables(db) {

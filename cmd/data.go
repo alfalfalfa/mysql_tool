@@ -2,9 +2,14 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 	"io/ioutil"
+	//"github.com/volatiletech/sqlboiler/v4/drivers"
+	//"github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql/driver"
+	//"github.com/volatiletech/sqlboiler/v4/types"
+	"os"
+	"reflect"
 
 	"strings"
 
@@ -17,7 +22,7 @@ import (
 	jsonutil "github.com/alfalfalfa/mysql_tool/util/json"
 	"github.com/alfalfalfa/xlsx"
 	"github.com/docopt/docopt-go"
-	"github.com/jinzhu/gorm"
+	//null "github.com/volatiletech/null/v8"
 )
 
 const usageData = `mysql_tool data
@@ -150,13 +155,16 @@ func loadModelToMap(arg *DataArg) *tableMaps {
 }
 
 //==========================================================================
+type DBValue interface{}
+type DBRow []DBValue
+
 type Data struct {
 	Tables []*TableData
 }
 type TableData struct {
 	Name   string
 	Keys   []string
-	Values [][]string
+	Values []DBRow
 }
 
 func NewDataFromExcel(arg *DataArg) *Data {
@@ -188,7 +196,7 @@ func NewDataFromExcel(arg *DataArg) *Data {
 					exist = et
 
 					// 新規分を追加
-					newRow := make([][]string, 0)
+					newRow := make([]DBRow, 0)
 					for _, ov := range et.Values {
 						newRow = append(newRow, ov)
 					}
@@ -211,7 +219,7 @@ func NewDataFromExcelSheet(sheet *xlsx.Sheet) *TableData {
 	res := &TableData{
 		Name:   sheet.Name,
 		Keys:   make([]string, 0),
-		Values: make([][]string, 0),
+		Values: make([]DBRow, 0),
 	}
 	// keyのcell位置を保持
 	keyIndexMap := make(map[string]int)
@@ -236,7 +244,7 @@ func NewDataFromExcelSheet(sheet *xlsx.Sheet) *TableData {
 			if v == "" {
 				continue
 			}
-			dataRow := make([]string, 0)
+			dataRow := make(DBRow, 0)
 			for _, key := range res.Keys {
 				n := keyIndexMap[key]
 				dataRow = append(dataRow, escapeValue(getCellValue(row, n)))
@@ -275,13 +283,53 @@ func NewDataFromJson(arg *DataArg) *Data {
 	return res
 }
 
+//func getDBInfo(dsn string) (*drivers.DBInfo, error) {
+//	mysqlConfig, err := mysql.ParseDSN(dsn)
+//	if err != nil {
+//		return nil, err
+//	}
+//	//fmt.Fprintf(os.Stderr, "%+v\n", mysqlConfig)
+//
+//	var driverConfig drivers.Config = make(map[string]interface{})
+//	driverConfig[drivers.ConfigUser] = mysqlConfig.User
+//	driverConfig[drivers.ConfigPass] = mysqlConfig.Passwd
+//	driverConfig[drivers.ConfigDBName] = mysqlConfig.DBName
+//	addr := strings.Split(mysqlConfig.Addr, ":")
+//	driverConfig[drivers.ConfigHost] = addr[0]
+//	if 1 < len(addr) {
+//		i, err := strconv.Atoi(addr[1])
+//		if err != nil {
+//			driverConfig[drivers.ConfigPort] = 0
+//		} else {
+//			driverConfig[drivers.ConfigPort] = i
+//		}
+//	}
+//	driverConfig[drivers.ConfigSSLMode] = mysqlConfig.TLSConfig
+//
+//	dbinfo, err := driver.Assemble(driverConfig)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	return dbinfo, nil
+//}
+
 func NewDataFromMysql(arg *DataArg) *Data {
-	fqdn := arg.Inputs[0]
-	db, err := gorm.Open("mysql", fqdn)
+	dsn := arg.Inputs[0]
+	//dbinfo, err := getDBInfo(dsn)
+	//checkError(err)
+	db, err := gorm.Open(mysql.Open(dsn))
 	checkError(err)
+	//for _, t := range dbinfo.Tables {
+	//	fmt.Fprintf(os.Stderr, "%s\n", t.Name)
+	//	for _, c := range t.Columns {
+	//		fmt.Fprintf(os.Stderr, "\t%s %s %s\n", c.Name, c.Type, c.DBType)
+	//	}
+	//}
 	res := &Data{
 		Tables: make([]*TableData, 0),
 	}
+
 	for _, tableInfo := range models.LoadMysqlTables(db) {
 		if !containsOrEmpty(arg.Tables, tableInfo.Name) {
 			continue
@@ -298,42 +346,27 @@ func NewDataFromMysql(arg *DataArg) *Data {
 
 	return res
 }
-
 func NewTableDataFromMysql(db *gorm.DB, tableInfo models.MysqlTable) *TableData {
 	res := &TableData{
-		Name:   tableInfo.GetName(),
-		Keys:   make([]string, 0),
-		Values: make([][]string, 0),
+		Name:   tableInfo.Name,
+		Values: make([]DBRow, 0),
 	}
+	db.Raw("select column_name from information_schema.columns where table_schema = database() and table_name = ? order by ordinal_position", tableInfo.GetName()).Scan(&res.Keys)
 
-	rows, err := db.DB().Query("select * from `" + tableInfo.GetName() + "`")
-	defer rows.Close()
-	for rows.Next() {
-		if len(res.Keys) == 0 {
-			columns, err := rows.Columns()
-			checkError(err)
+	var results []map[string]interface{}
+	err := db.Table(tableInfo.Name).Find(&results).Error
+	checkError(err)
+	fmt.Println(tableInfo.Name)
+	b, _ := json.Marshal(results)
+	fmt.Println(string(b))
 
-			res.Keys = columns
-			//fmt.Println(res.Keys)
-		}
-
-		valueRefs := make([]*string, 0)
-		valueRefsForScan := make([]interface{}, 0)
-		for range res.Keys {
-			var v string
-			valueRefs = append(valueRefs, &v)
-			valueRefsForScan = append(valueRefsForScan, &v)
-		}
-
-		rows.Scan(valueRefsForScan...)
-		values := make([]string, 0)
-		for _, v := range valueRefs {
-			values = append(values, *v)
+	for _, row := range results {
+		values := make(DBRow, 0)
+		for _, c := range res.Keys {
+			values = append(values, row[c])
 		}
 		res.Values = append(res.Values, values)
 	}
-	err = rows.Err()
-	checkError(err)
 
 	return res
 }
@@ -399,7 +432,8 @@ func (this Data) ToSQL(args *DataArg) string {
 		valuesList := make([]string, 0)
 		for _, row := range t.Values {
 			values := make([]string, 0)
-			for i, v := range row {
+			for i, rawV := range row {
+				v := ToString(rawV)
 				if strings.ToLower(v) == "null" {
 					values = append(values, "null")
 
@@ -467,3 +501,156 @@ func contains(s []string, e string) bool {
 	}
 	return false
 }
+func ToString(v interface{}) string {
+	return fmt.Sprintf("%v", v)
+}
+func dereferenceIfPtr(value interface{}) interface{} {
+	return reflect.Indirect(reflect.ValueOf(value)).Interface()
+}
+
+//func getEmptyValueByType(c drivers.Column, tinyIntAsInt bool) interface{} {
+//	unsigned := strings.Contains(c.FullDBType, "unsigned")
+//	if c.Nullable {
+//		switch c.DBType {
+//		case "tinyint":
+//			// map tinyint(1) to bool if TinyintAsBool is true
+//			if !tinyIntAsInt && c.FullDBType == "tinyint(1)" {
+//				var v null.Bool
+//				return v
+//			} else if unsigned {
+//				var v null.Uint8
+//				return v
+//			} else {
+//				var v null.Int8
+//				return v
+//			}
+//		case "smallint":
+//			if unsigned {
+//				var v null.Uint16
+//				return v
+//			} else {
+//				var v null.Int16
+//				return v
+//			}
+//		case "mediumint":
+//			if unsigned {
+//				var v null.Uint32
+//				return v
+//			} else {
+//				var v null.Int32
+//				return v
+//			}
+//		case "int", "integer":
+//			if unsigned {
+//				var v null.Uint
+//				return v
+//			} else {
+//				var v null.Int
+//				return v
+//			}
+//		case "bigint":
+//			if unsigned {
+//				var v null.Uint64
+//				return v
+//			} else {
+//				var v null.Int64
+//				return v
+//			}
+//		case "float":
+//			var v null.Float32
+//			return v
+//		case "double", "double precision", "real":
+//			var v null.Float64
+//			return v
+//		case "boolean", "bool":
+//			var v null.Bool
+//			return v
+//		case "date", "datetime", "timestamp":
+//			var v null.Time
+//			return v
+//		case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
+//			var v null.Bytes
+//			return v
+//		case "numeric", "decimal", "dec", "fixed":
+//			var v types.NullDecimal
+//			return v
+//		case "json":
+//			var v null.JSON
+//			return v
+//		default:
+//			var v null.String
+//			return v
+//		}
+//	} else {
+//		switch c.DBType {
+//		case "tinyint":
+//			// map tinyint(1) to bool if TinyintAsBool is true
+//			if !tinyIntAsInt && c.FullDBType == "tinyint(1)" {
+//				var v bool
+//				return v
+//			} else if unsigned {
+//				var v uint8
+//				return v
+//			} else {
+//				var v int8
+//				return v
+//			}
+//		case "smallint":
+//			if unsigned {
+//				var v uint16
+//				return v
+//			} else {
+//				var v int16
+//				return v
+//			}
+//		case "mediumint":
+//			if unsigned {
+//				var v uint32
+//				return v
+//			} else {
+//				var v int32
+//				return v
+//			}
+//		case "int", "integer":
+//			if unsigned {
+//				var v uint
+//				return v
+//			} else {
+//				var v int
+//				return v
+//			}
+//		case "bigint":
+//			if unsigned {
+//				var v uint64
+//				return v
+//			} else {
+//				var v int64
+//				return v
+//			}
+//		case "float":
+//			var v float32
+//			return v
+//		case "double", "double precision", "real":
+//			var v float64
+//			return v
+//		case "boolean", "bool":
+//			var v bool
+//			return v
+//		case "date", "datetime", "timestamp":
+//			var v time.Time
+//			return v
+//		case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
+//			var v []byte
+//			return v
+//		case "numeric", "decimal", "dec", "fixed":
+//			var v types.Decimal
+//			return v
+//		case "json":
+//			var v types.JSON
+//			return v
+//		default:
+//			var v string
+//			return v
+//		}
+//	}
+//}
